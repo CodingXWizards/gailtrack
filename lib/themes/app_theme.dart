@@ -6,6 +6,9 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: AppColorsLight.primary,
+    dividerColor: AppColorsLight.border,
+    fontFamily: "Inter",
+
     scaffoldBackgroundColor: AppColorsLight.background,
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColorsLight.primary,
@@ -84,7 +87,10 @@ class AppTheme {
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primaryColor: AppColorsDark.primary,
+    dividerColor: AppColorsDark.border,
     scaffoldBackgroundColor: AppColorsDark.background,
+    focusColor: AppColorsDark.textPrimary,
+    fontFamily: "Inter",
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColorsDark.primary,
       titleTextStyle: TextStyle(color: AppColorsDark.textPrimary),
@@ -103,7 +109,7 @@ class AppTheme {
         foregroundColor:
             const WidgetStatePropertyAll<Color>(AppColorsDark.textPrimary),
         padding: const WidgetStatePropertyAll<EdgeInsets>(
-            EdgeInsets.symmetric(horizontal: 20, vertical: 20)),
+            EdgeInsets.symmetric(horizontal: 20, vertical: 12)),
         shape: WidgetStatePropertyAll<OutlinedBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -114,23 +120,23 @@ class AppTheme {
     textTheme: const TextTheme(
       //* Text Styles for Large Headings
       titleLarge: TextStyle(
-        fontSize: 26,
+        fontSize: 24,
         fontWeight: FontWeight.w900,
         color: AppColorsDark.textPrimary,
       ),
       titleMedium: TextStyle(
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: FontWeight.bold,
         color: AppColorsDark.textPrimary,
       ),
       titleSmall: TextStyle(
-        fontSize: 20,
+        fontSize: 18,
         color: AppColorsDark.textPrimary,
       ),
 
       //* Text Style for Normal Headings
       labelLarge: TextStyle(
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColorsDark.textPrimary,
       ),
@@ -139,23 +145,23 @@ class AppTheme {
         color: AppColorsDark.textPrimary,
       ),
       labelSmall: TextStyle(
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColorsDark.textSecondary,
       ),
 
       //* Text Style for Descriptions
       bodyLarge: TextStyle(
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppColorsDark.textPrimary,
       ),
       bodyMedium: TextStyle(
-        fontSize: 16,
+        fontSize: 14,
         color: AppColorsDark.textPrimaryMuted,
       ),
       bodySmall: TextStyle(
-        fontSize: 14,
+        fontSize: 12,
         color: AppColorsDark.textPrimaryMuted,
       ),
     ),
