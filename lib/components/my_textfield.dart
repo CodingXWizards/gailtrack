@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gailtrack/pages/login_page.dart';
 
 class MyTextfield extends StatelessWidget {
-  final controller;
+  final TextEditingController controller;
   final String hintText;
   final bool obscureText;
 
@@ -14,18 +13,18 @@ class MyTextfield extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        decoration: InputDecoration(
-          focusedBorder:
-              OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          fillColor: const Color(0xFF2C2B2B),
-          filled: true,
-          hintText: hintText,
-        ),
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      style: Theme.of(context).textTheme.labelMedium,
+      decoration: InputDecoration(
+        enabledBorder:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        fillColor: const Color(0xFF2C2B2B),
+        filled: true,
+        hintText: hintText,
       ),
     );
   }

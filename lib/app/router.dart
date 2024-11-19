@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gailtrack/screens/login/index.dart';
 import 'package:gailtrack/screens/page_not_found.dart';
 import 'package:gailtrack/screens/request/router.dart';
 import 'package:gailtrack/utils/page_animation.dart';
@@ -10,6 +11,8 @@ class AppRouter {
     switch (settings.name) {
       case '/':
         return MaterialPageRoute(builder: (context) => const Home());
+      case '/signin':
+        return MaterialPageRoute(builder: (context) => Login());
       default:
         if (settings.name!.startsWith('/request')) {
           return RequestRouter.generateRoute(
