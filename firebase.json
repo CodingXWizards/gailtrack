@@ -1,0 +1,25 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "gailtrack-32b7b",
+                    "appId": "1:89469169979:android:7384c9a254d724bb77071e",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "gailtrack-32b7b",
+                    "configurations": {
+                        "android": "1:89469169979:android:7384c9a254d724bb77071e",
+                        "ios": "1:89469169979:ios:cf855d1263892eb177071e",
+                        "macos": "1:89469169979:ios:cf855d1263892eb177071e",
+                        "web": "1:89469169979:web:d5b1ca7dd791738d77071e",
+                        "windows": "1:89469169979:web:bcb1c285e083632a77071e"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,14 +1,33 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gailtrack/components/my_button.dart';
 import 'package:gailtrack/components/my_textfield.dart';
 
-class Login extends StatelessWidget {
-  Login({super.key});
-  final usernameController = TextEditingController();
+class Login extends StatefulWidget {
+  const Login({super.key});
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void signUserIn(BuildContext context) {
-    Navigator.popAndPushNamed(context, '/');
+  String error = "";
+
+  Future<User?> signUserIn() async {
+    try {
+      final credentials = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+              email: emailController.text, password: passwordController.text);
+      return credentials.user;
+    } catch (e) {
+      setState(() => error = e.toString());
+      return null;
+    }
+
+    // Navigator.popAndPushNamed(context, '/');
   }
 
   @override
@@ -28,8 +47,8 @@ class Login extends StatelessWidget {
                     style: Theme.of(context).textTheme.displaySmall),
                 const SizedBox(height: 40),
                 MyTextfield(
-                  controller: usernameController,
-                  hintText: 'Username',
+                  controller: emailController,
+                  hintText: 'Email',
                   obscureText: false,
                 ),
                 const SizedBox(height: 25),
@@ -48,12 +67,22 @@ class Login extends StatelessWidget {
                     )
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
+                Text(
+                  error,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+                const SizedBox(height: 12),
                 MyButton(
                   text: "Sign in",
                   bgColor: Theme.of(context).focusColor,
                   textColor: Theme.of(context).primaryColor,
-                  onTap: () => signUserIn(context),
+                  onTap: () async {
+                    User? user = await signUserIn();
+                    if (user != null) {
+                      Navigator.pushNamed(context, '/');
+                    }
+                  },
                 ),
               ],
             ),

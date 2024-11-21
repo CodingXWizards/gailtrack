@@ -12,7 +12,7 @@ class AppRouter {
       case '/':
         return MaterialPageRoute(builder: (context) => const Home());
       case '/signin':
-        return MaterialPageRoute(builder: (context) => Login());
+        return MaterialPageRoute(builder: (context) => const Login());
       default:
         if (settings.name!.startsWith('/request')) {
           return RequestRouter.generateRoute(
