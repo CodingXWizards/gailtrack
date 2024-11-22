@@ -11,7 +11,9 @@ plugins {
 android {
     namespace = "com.example.gailtrack"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    //! Better way to set minSdk in android
+    // ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

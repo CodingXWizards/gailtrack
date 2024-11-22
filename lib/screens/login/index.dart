@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gailtrack/components/my_button.dart';
 import 'package:gailtrack/components/my_textfield.dart';
 
@@ -11,23 +12,32 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool isLoading = false;
 
   String error = "";
 
-  Future<User?> signUserIn() async {
+  Future<bool> signUserIn() async {
+    setState(() => isLoading = true);
     try {
       final credentials = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
-              email: emailController.text, password: passwordController.text);
-      return credentials.user;
+              email: emailController.text.trim(),
+              password: passwordController.text.trim());
+      String? idToken = await credentials.user?.getIdToken();
+      if (idToken == null) return false;
+
+      await _storage.write(key: 'authToken', value: idToken);
+      return true;
     } catch (e) {
       setState(() => error = e.toString());
-      return null;
+      return false;
+    } finally {
+      setState(() => isLoading = true);
     }
-
-    // Navigator.popAndPushNamed(context, '/');
   }
 
   @override
@@ -75,12 +85,13 @@ class _LoginState extends State<Login> {
                 const SizedBox(height: 12),
                 MyButton(
                   text: "Sign in",
+                  isLoading: isLoading,
                   bgColor: Theme.of(context).focusColor,
                   textColor: Theme.of(context).primaryColor,
                   onTap: () async {
-                    User? user = await signUserIn();
-                    if (user != null) {
-                      Navigator.pushNamed(context, '/');
+                    bool isAuthenticated = await signUserIn();
+                    if (mounted && isAuthenticated) {
+                      Navigator.pushNamed(context, '/onboarding');
                     }
                   },
                 ),
