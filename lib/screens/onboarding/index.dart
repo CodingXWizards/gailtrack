@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gailtrack/components/my_button.dart';
+import 'package:gailtrack/utils/helper.dart';
 
 class Onboarding extends StatefulWidget {
   const Onboarding({super.key});
@@ -12,6 +13,20 @@ class Onboarding extends StatefulWidget {
 class _OnboardingState extends State<Onboarding> {
   bool isBiometricsEnabled = false;
   final _storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    checkBiometric().then((isAvailable) {
+      bool isBiometricAvailable = isAvailable;
+        if (!isBiometricAvailable) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacementNamed(context, '/');
+          });
+        }
+      });
+  }
+
 
   @override
   Widget build(BuildContext context) {
