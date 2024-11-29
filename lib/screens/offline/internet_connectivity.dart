@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gailtrack/themes/app_theme.dart';
 
 class InternetConnectivity extends StatelessWidget {
   final VoidCallback onTurnOnLocation;
