@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "89469169979",
+    "project_id": "gailtrack-32b7b",
+    "storage_bucket": "gailtrack-32b7b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89469169979:android:9cf319e7f5ee5d7d77071e",
+        "android_client_info": {
+          "package_name": "com.example.gailtrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW0rBbUWJgp5RVosWWAgtgCWtnq-9Fers"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
