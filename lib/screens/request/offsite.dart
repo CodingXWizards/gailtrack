@@ -52,7 +52,7 @@ class _RequestOffsiteState extends State<RequestOffsite> {
             ),
             const SizedBox(height: 32),
             const Text(
-              'Select the location of the employee',
+              'Select the location',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -77,25 +77,37 @@ class _RequestOffsiteState extends State<RequestOffsite> {
               },
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[800],
-                padding: const EdgeInsets.symmetric(vertical: 12),
+            Center(
+              child: SizedBox(
+                width: 200, // Adjust width as needed
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[800],
+                    textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontStyle: FontStyle.normal),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                  ),
+                  child: const Text('Set New Location'),
+                ),
               ),
-              child: const Text('Set New Location'),
             ),
             const Spacer(),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: ElevatedButton(
                     onPressed: () {
-                      // for Cancel
+                      // Action for Cancel
                     },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.grey),
-                    ),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(
+                          color: Colors.white,
+                        )),
                     child: const Text('Cancel'),
                   ),
                 ),
@@ -106,9 +118,11 @@ class _RequestOffsiteState extends State<RequestOffsite> {
                       // Action for Confirm
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(
+                          color: Colors.black,
+                        )),
                     child: const Text('Confirm'),
                   ),
                 ),
