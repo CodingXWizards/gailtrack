@@ -17,9 +17,11 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
 
+  //* Accessing Mapbox access token from .env
   String mapboxAccessToken =
       dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? 'default_value';
 
+  //* Setting access token to the map
   MapboxOptions.setAccessToken(mapboxAccessToken);
 
   //* Initializing Firebase

@@ -157,11 +157,11 @@ class AppTheme {
         color: AppColorsDark.textPrimary,
       ),
       bodyMedium: TextStyle(
-        fontSize: 14,
+        fontSize: 16,
         color: AppColorsDark.textPrimaryMuted,
       ),
       bodySmall: TextStyle(
-        fontSize: 12,
+        fontSize: 14,
         color: AppColorsDark.textPrimaryMuted,
       ),
     ),

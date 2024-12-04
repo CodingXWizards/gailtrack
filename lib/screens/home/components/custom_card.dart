@@ -31,7 +31,7 @@ class CustomCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   Text(description,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                      style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),

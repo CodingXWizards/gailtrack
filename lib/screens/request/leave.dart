@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:gailtrack/components/my_button.dart';
 
 class RequestLeave extends StatefulWidget {
   const RequestLeave({super.key});
@@ -9,10 +9,9 @@ class RequestLeave extends StatefulWidget {
 }
 
 class _RequestLeaveState extends State<RequestLeave> {
-  late MapboxMap _mapboxMap;
-
   String selectedLabel = 'Medical Leave';
-  DateTimeRange? selectedDateRange;
+  DateTimeRange? selectedDateRange =
+      DateTimeRange(start: DateTime.now(), end: DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -30,28 +29,36 @@ class _RequestLeaveState extends State<RequestLeave> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "User",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: 'Asmi Khare',
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  isDense: true,
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
                 ),
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: 'Asmi Khare',
                     child: Row(
                       children: [
-                        CircleAvatar(
-                            // backgroundImage: AssetImage(
-                            //   'assets/profile.jpg'),
-                            //  radius: 12,
-                            ),
-                        SizedBox(width: 8),
-                        Text('Asmi Khare'),
+                        const CircleAvatar(
+                          backgroundImage: AssetImage('assets/profile.jpg'),
+                          radius: 16,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Asmi Khare',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
                       ],
                     ),
                   ),
@@ -61,46 +68,61 @@ class _RequestLeaveState extends State<RequestLeave> {
               const SizedBox(height: 16),
 
               // Title
-              const Text(
+              Text(
                 "Title",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
-              const TextField(
+              TextField(
                 decoration: InputDecoration(
                   hintText: "Title of the leave",
-                  border: OutlineInputBorder(),
+                  hintStyle: Theme.of(context).textTheme.titleSmall,
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
                 ),
               ),
               const SizedBox(height: 16),
 
               // Label
-              const Text(
+              Text(
                 "Label",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: selectedLabel,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
                 ),
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: 'Medical Leave',
-                    child: Text('Medical Leave'),
+                    child: Text('Medical Leave',
+                        style: Theme.of(context).textTheme.titleSmall),
                   ),
                   DropdownMenuItem(
                     value: 'Casual Leave',
-                    child: Text('Casual Leave'),
+                    child: Text('Casual Leave',
+                        style: Theme.of(context).textTheme.titleSmall),
                   ),
                   DropdownMenuItem(
                     value: 'Earned Leave',
-                    child: Text('Earned Leave'),
+                    child: Text('Earned Leave',
+                        style: Theme.of(context).textTheme.titleSmall),
                   ),
                   DropdownMenuItem(
                     value: 'Other',
-                    child: Text('Other'),
+                    child: Text('Other',
+                        style: Theme.of(context).textTheme.titleSmall),
                   ),
                 ],
                 onChanged: (value) {
@@ -112,9 +134,9 @@ class _RequestLeaveState extends State<RequestLeave> {
               const SizedBox(height: 16),
 
               // SelectDate
-              const Text(
+              Text(
                 "Select Date",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
               InkWell(
@@ -131,10 +153,15 @@ class _RequestLeaveState extends State<RequestLeave> {
                   }
                 },
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            width: 1, color: Theme.of(context).dividerColor)),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            width: 1, color: Theme.of(context).dividerColor)),
                     contentPadding:
-                        EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                        const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
                   ),
                   child: Text(
                     selectedDateRange == null
@@ -147,16 +174,22 @@ class _RequestLeaveState extends State<RequestLeave> {
               const SizedBox(height: 16),
 
               // Reason
-              const Text(
+              Text(
                 "Reason",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
-              const TextField(
-                maxLines: 25,
+              TextField(
+                maxLines: 10,
                 decoration: InputDecoration(
                   hintText: "I want to take an urgent leave from the office...",
-                  border: OutlineInputBorder(),
+                  hintStyle: Theme.of(context).textTheme.titleSmall,
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Theme.of(context).dividerColor)),
                 ),
               ),
               const SizedBox(height: 32),
@@ -165,19 +198,11 @@ class _RequestLeaveState extends State<RequestLeave> {
               Center(
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // submit action
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[800],
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text(
-                      "Request a leave",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
+                  child: MyButton(
+                      text: "Request a leave",
+                      bgColor: Theme.of(context).colorScheme.surface,
+                      textColor: Theme.of(context).focusColor,
+                      onTap: () {}),
                 ),
               ),
             ],

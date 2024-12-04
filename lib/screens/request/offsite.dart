@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gailtrack/components/my_button.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class RequestOffsite extends StatefulWidget {
   const RequestOffsite({super.key});
@@ -8,7 +10,9 @@ class RequestOffsite extends StatefulWidget {
 }
 
 class _RequestOffsiteState extends State<RequestOffsite> {
+  late MapboxMap _mapboxMap;
   String selectedLocation = 'Mumbai, Office';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,116 +23,116 @@ class _RequestOffsiteState extends State<RequestOffsite> {
           style: Theme.of(context).textTheme.titleSmall,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Employee name',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const Text(
-              'Asmi xyzwk',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Email',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const Text(
-              'asmi.xyzxaa@company.com',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Phone',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Text(
-              '+1 (415) 12 3-4567',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              'Select the location',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            RadioListTile<String>(
-              title: const Text('Delhi, HQ'),
-              value: 'Delhi, HQ',
-              groupValue: selectedLocation,
-              onChanged: (value) {
-                setState(() {
-                  selectedLocation = value!;
-                });
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Mumbai, Office'),
-              value: 'Mumbai, Office',
-              groupValue: selectedLocation,
-              onChanged: (value) {
-                setState(() {
-                  selectedLocation = value!;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: SizedBox(
-                width: 200, // Adjust width as needed
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[800],
-                    textStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontStyle: FontStyle.normal),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  child: const Text('Set New Location'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Employee name',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Text(
+                'Asmi xyzwk',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Email',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Text(
+                'asmi.xyzxaa@company.com',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Phone',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Text(
+                '+1 (415) 12 3-4567',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Select the location',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              RadioListTile<String>(
+                activeColor: Theme.of(context).focusColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                dense: true,
+                contentPadding: const EdgeInsets.all(4),
+                visualDensity: VisualDensity.compact,
+                title: const Text('Delhi, HQ'),
+                value: 'Delhi, HQ',
+                groupValue: selectedLocation,
+                onChanged: (value) {
+                  setState(() {
+                    selectedLocation = value!;
+                  });
+                },
+              ),
+              RadioListTile<String>(
+                activeColor: Theme.of(context).focusColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                dense: true,
+                contentPadding: const EdgeInsets.all(4),
+                visualDensity: VisualDensity.compact,
+                title: const Text('Mumbai, Office'),
+                value: 'Mumbai, Office',
+                groupValue: selectedLocation,
+                onChanged: (value) {
+                  setState(() {
+                    selectedLocation = value!;
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+              Container(
+                clipBehavior: Clip.antiAlias,
+                decoration:
+                    BoxDecoration(borderRadius: BorderRadius.circular(12)),
+                height: 250,
+                child: MapWidget(
+                  key: const ValueKey("mapWidget"),
+                  cameraOptions: CameraOptions(
+                      center: Point(coordinates: Position(-98.0, 39.5)),
+                      zoom: 7,
+                      bearing: 0,
+                      pitch: 0),
+                  onMapCreated: (mapboxMap) {
+                    _mapboxMap = mapboxMap;
+                  },
                 ),
               ),
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Action for Cancel
-                    },
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: const TextStyle(
-                          color: Colors.white,
-                        )),
-                    child: const Text('Cancel'),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: MyButton(
+                        text: "Cancel",
+                        bgColor: Theme.of(context).colorScheme.surface,
+                        textColor: Theme.of(context).focusColor,
+                        onTap: () {}),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Action for Confirm
-                    },
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: const TextStyle(
-                          color: Colors.black,
-                        )),
-                    child: const Text('Confirm'),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: MyButton(
+                        text: "Confirm",
+                        bgColor: Theme.of(context).focusColor,
+                        textColor: Theme.of(context).primaryColor,
+                        onTap: () {}),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
