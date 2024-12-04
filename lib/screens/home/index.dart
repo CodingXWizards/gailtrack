@@ -101,7 +101,12 @@ class _HomeState extends State<Home> {
             child: CircleAvatar(
               radius: 16,
               backgroundColor: Theme.of(context).focusColor,
-              child: const Icon(Icons.person),
+              child: const Center(
+                child: Text(
+                  "SOS",
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12)
@@ -114,9 +119,30 @@ class _HomeState extends State<Home> {
             _currentTabIndex = index;
           });
         },
-        children:
-            _tabs.map((tab) => SingleChildScrollView(child: tab)).toList(),
+        children: _tabs
+            .map(
+              (tab) => SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: tab,
+                ),
+              ),
+            )
+            .toList(),
       ),
+      floatingActionButton: _currentTabIndex == 2
+          ? ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll<Color>(
+                    Theme.of(context).primaryColor),
+                shape: WidgetStatePropertyAll<OutlinedBorder>(CircleBorder(
+                    side: BorderSide(
+                        width: 1, color: Theme.of(context).focusColor))),
+              ),
+              onPressed: () {},
+              child: const Icon(Icons.add),
+            )
+          : null,
       bottomNavigationBar: BottomNavigation(
         currentTabIndex: _currentTabIndex,
         onTap: _onTap,

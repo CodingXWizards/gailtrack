@@ -21,8 +21,8 @@ class MyButton extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll<Color>(bgColor),
-        ),
+            backgroundColor: WidgetStatePropertyAll<Color>(bgColor),
+            foregroundColor: WidgetStatePropertyAll<Color>(textColor)),
         onPressed: onTap,
         child: isLoading
             ? const SizedBox(
@@ -35,7 +35,6 @@ class MyButton extends StatelessWidget {
               )
             : Text(
                 text,
-                style: Theme.of(context).textTheme.labelSmall,
               ),
       ),
     );
