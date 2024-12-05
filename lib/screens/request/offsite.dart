@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gailtrack/components/my_button.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:provider/provider.dart';
+
+import 'package:gailtrack/state/user/model.dart';
+import 'package:gailtrack/components/my_button.dart';
+import 'package:gailtrack/state/user/provider.dart';
 
 class RequestOffsite extends StatefulWidget {
   const RequestOffsite({super.key});
@@ -10,11 +14,14 @@ class RequestOffsite extends StatefulWidget {
 }
 
 class _RequestOffsiteState extends State<RequestOffsite> {
-  late MapboxMap _mapboxMap;
+  // late MapboxMap _mapboxMap;
   String selectedLocation = 'Mumbai, Office';
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    User user = userProvider.user;
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -34,7 +41,7 @@ class _RequestOffsiteState extends State<RequestOffsite> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
-                'Asmi xyzwk',
+                user.displayName,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 12),
@@ -43,7 +50,7 @@ class _RequestOffsiteState extends State<RequestOffsite> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
-                'asmi.xyzxaa@company.com',
+                user.email,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 12),
@@ -52,7 +59,7 @@ class _RequestOffsiteState extends State<RequestOffsite> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
-                '+1 (415) 12 3-4567',
+                user.phoneNumber,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 12),
@@ -107,7 +114,7 @@ class _RequestOffsiteState extends State<RequestOffsite> {
                       bearing: 0,
                       pitch: 0),
                   onMapCreated: (mapboxMap) {
-                    _mapboxMap = mapboxMap;
+                    // _mapboxMap = mapboxMap;
                   },
                 ),
               ),

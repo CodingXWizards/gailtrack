@@ -1,6 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:gailtrack/state/user/model.dart';
 import 'package:gailtrack/components/avatar.dart';
+import 'package:gailtrack/state/user/provider.dart';
 import 'package:gailtrack/screens/home/wrappers/box_container.dart';
 
 class Tasks extends StatefulWidget {
@@ -11,67 +14,60 @@ class Tasks extends StatefulWidget {
 }
 
 class _TasksState extends State<Tasks> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
   @override
   Widget build(BuildContext context) {
-    User? user = _auth.currentUser;
+    User user = Provider.of<UserProvider>(context).user;
 
-    return user != null
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Avatar(
-                    radius: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  RichText(
-                    text: TextSpan(
-                        text: "Good Morning, Ashmi!\n",
-                        style: Theme.of(context).textTheme.labelLarge,
-                        children: const [
-                          TextSpan(
-                              text: "Team Captain",
-                              style:
-                                  TextStyle(fontSize: 12, color: Colors.grey))
-                        ]),
-                  ),
-                  const Spacer(),
-                  const Icon(
-                    Icons.logout_rounded,
-                    size: 28,
-                  )
-                ],
-              ),
-              const SizedBox(height: 28),
-              Text("Today's Tasks",
-                  style: Theme.of(context).textTheme.bodyLarge),
-              const SizedBox(height: 20),
-              const TaskCard(
-                smallHead: "Remote",
-                largeHead: "Prepare Presentation",
-                time: "12:00 AM",
-              ),
-              const SizedBox(height: 20),
-              const TaskCard(
-                smallHead: "Remote",
-                largeHead: "Write Video Script",
-                time: "12:00 AM",
-              ),
-              const SizedBox(height: 20),
-              const TaskCard(
-                smallHead: "Remote",
-                largeHead: "Check Figma Design",
-                time: "12:00 AM",
-              ),
-            ],
-          )
-        : const Center(
-            child: Text("No user signed in"),
-          );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Avatar(
+              radius: 20,
+            ),
+            const SizedBox(width: 8),
+            RichText(
+              text: TextSpan(
+                  text: "${user.displayName}!\n",
+                  style: Theme.of(context).textTheme.titleSmall,
+                  children: [
+                    TextSpan(
+                        text: user.dept,
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey))
+                  ]),
+            ),
+            const Spacer(),
+            const Icon(
+              Icons.logout_rounded,
+              size: 28,
+            )
+          ],
+        ),
+        const SizedBox(height: 28),
+        Text("Today's Tasks", style: Theme.of(context).textTheme.bodyLarge),
+        const SizedBox(height: 20),
+        const TaskCard(
+          smallHead: "Remote",
+          largeHead: "Prepare Presentation",
+          time: "12:00 AM",
+        ),
+        const SizedBox(height: 20),
+        const TaskCard(
+          smallHead: "Remote",
+          largeHead: "Write Video Script",
+          time: "12:00 AM",
+        ),
+        const SizedBox(height: 20),
+        const TaskCard(
+          smallHead: "Remote",
+          largeHead: "Check Figma Design",
+          time: "12:00 AM",
+        ),
+      ],
+    );
   }
 }
 

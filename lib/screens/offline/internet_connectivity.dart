@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:gailtrack/themes/app_theme.dart';
 
 class InternetConnectivity extends StatelessWidget {
   final VoidCallback onTurnOnLocation;
   final VoidCallback onStoredLocation;
 
   const InternetConnectivity({
-    Key? key,
+    super.key,
     required this.onTurnOnLocation,
     required this.onStoredLocation,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

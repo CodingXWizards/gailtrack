@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
+
+import 'package:gailtrack/utils/helper.dart';
+import 'package:gailtrack/state/user/provider.dart';
 import 'package:gailtrack/components/bottom_navigation.dart';
-import 'package:gailtrack/screens/home/tabs/attendance/index.dart';
 import 'package:gailtrack/screens/home/tabs/home/index.dart';
 import 'package:gailtrack/screens/home/tabs/more/index.dart';
 import 'package:gailtrack/screens/home/tabs/people/index.dart';
 import 'package:gailtrack/screens/home/tabs/tasks/index.dart';
-import 'package:gailtrack/utils/helper.dart';
+import 'package:gailtrack/screens/home/tabs/attendance/index.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -38,7 +41,18 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     checkLoggedIn();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userProvider
+          .loadData(); // Ensure this does not trigger notifyListeners immediately
+    });
   }
 
   void checkLoggedIn() async {
@@ -87,7 +101,7 @@ class _HomeState extends State<Home> {
                     ? "Attendance"
                     : _currentTabIndex == 2
                         ? "Tasks"
-                        : _currentTabIndex == 3
+                        : _currentTabIndex == 31
                             ? "People"
                             : "More",
             style: Theme.of(context).textTheme.titleSmall),
