@@ -40,7 +40,7 @@ class User {
         displayName = 'Guest',
         photoUrl = null,
         dept = '',
-        userType = UserType.user;
+        userType = UserType.hr;
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
