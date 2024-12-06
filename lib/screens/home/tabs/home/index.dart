@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+
+import 'package:provider/provider.dart';
+import 'package:gailtrack/state/user/model.dart';
+import 'package:gailtrack/state/user/provider.dart';
 import 'package:gailtrack/screens/home/components/custom_card.dart';
 import 'package:gailtrack/screens/home/wrappers/box_container.dart';
 
@@ -12,6 +16,8 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
+    User user = Provider.of<UserProvider>(context).user;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -63,12 +69,19 @@ class _HomeTabState extends State<HomeTab> {
         ),
         const SizedBox(height: 32),
         CustomCard(
-          title: "Offisite Work",
-          description:
-              "You can request to work offsite if you're unable to come in.",
-          buttonText: "Request Offsite Work",
+          title:
+              user.userType == UserType.hr ? "Check Requests" : "Offisite Work",
+          description: user.userType == UserType.hr
+              ? "You can check your employee requests take action upon it."
+              : "You can request to work offsite if you're unable to come in.",
+          buttonText: user.userType == UserType.hr
+              ? "Requests"
+              : "Request Offsite Work",
           imagePath: "assets/images/bg1.png",
-          onPressed: () => Navigator.of(context).pushNamed('/request/offsite'),
+          onPressed: () => Navigator.of(context).pushNamed(
+              user.userType == UserType.hr
+                  ? "/request/all"
+                  : "/request/offsite"),
         ),
         const SizedBox(height: 32),
         CustomCard(
@@ -79,14 +92,15 @@ class _HomeTabState extends State<HomeTab> {
           onPressed: () => Navigator.pushNamed(context, '/request/leave'),
         ),
         const SizedBox(height: 32),
-        ElevatedButton(
-            style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(Colors.white)),
-            onPressed: () {},
-            child: Text(
-              "Leaderboard",
-              style: Theme.of(context).textTheme.labelSmall,
-            ))
+        if (user.userType == UserType.hr)
+          ElevatedButton(
+              style: const ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.white)),
+              onPressed: () => Navigator.pushNamed(context, '/request/members'),
+              child: Text(
+                "Manage Members",
+                style: Theme.of(context).textTheme.labelSmall,
+              ))
       ],
     );
   }

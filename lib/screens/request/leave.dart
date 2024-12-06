@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:gailtrack/components/my_button.dart';
+import 'package:gailtrack/state/user/model.dart';
+import 'package:gailtrack/state/user/provider.dart';
 
 class RequestLeave extends StatefulWidget {
   const RequestLeave({super.key});
@@ -15,6 +19,8 @@ class _RequestLeaveState extends State<RequestLeave> {
 
   @override
   Widget build(BuildContext context) {
+    User user = Provider.of<UserProvider>(context).user;
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -35,7 +41,7 @@ class _RequestLeaveState extends State<RequestLeave> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: 'Asmi Khare',
+                value: user.displayName,
                 decoration: InputDecoration(
                   isDense: true,
                   enabledBorder: OutlineInputBorder(
@@ -47,7 +53,7 @@ class _RequestLeaveState extends State<RequestLeave> {
                 ),
                 items: [
                   DropdownMenuItem(
-                    value: 'Asmi Khare',
+                    value: user.displayName,
                     child: Row(
                       children: [
                         const CircleAvatar(
@@ -56,7 +62,7 @@ class _RequestLeaveState extends State<RequestLeave> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Asmi Khare',
+                          user.displayName,
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                       ],
@@ -76,7 +82,7 @@ class _RequestLeaveState extends State<RequestLeave> {
               TextField(
                 decoration: InputDecoration(
                   hintText: "Title of the leave",
-                  hintStyle: Theme.of(context).textTheme.titleSmall,
+                  hintStyle: Theme.of(context).textTheme.bodyMedium,
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
                           width: 1, color: Theme.of(context).dividerColor)),
@@ -183,7 +189,7 @@ class _RequestLeaveState extends State<RequestLeave> {
                 maxLines: 10,
                 decoration: InputDecoration(
                   hintText: "I want to take an urgent leave from the office...",
-                  hintStyle: Theme.of(context).textTheme.titleSmall,
+                  hintStyle: Theme.of(context).textTheme.bodyMedium,
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
                           width: 1, color: Theme.of(context).dividerColor)),

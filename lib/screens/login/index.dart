@@ -31,6 +31,7 @@ class _LoginState extends State<Login> {
       if (idToken == null) return false;
 
       await _storage.write(key: 'authToken', value: idToken);
+      await _storage.write(key: 'email', value: emailController.text);
       return true;
     } catch (e) {
       setState(() => error = e.toString());
@@ -91,6 +92,7 @@ class _LoginState extends State<Login> {
                   onTap: () async {
                     bool isAuthenticated = await signUserIn();
                     if (mounted && isAuthenticated) {
+                      // ignore: use_build_context_synchronously
                       Navigator.pushNamed(context, '/onboarding');
                     }
                   },
