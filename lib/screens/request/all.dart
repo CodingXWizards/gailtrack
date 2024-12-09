@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:gailtrack/components/my_button.dart';
+import 'package:gailtrack/state/request/model.dart';
+import 'package:gailtrack/state/request/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class RequestAll extends StatefulWidget {
   const RequestAll({super.key});
@@ -38,6 +43,9 @@ class RequestAllState extends State<RequestAll> {
 
   @override
   Widget build(BuildContext context) {
+    List<Request> requestList =
+        Provider.of<RequestProvider>(context).requestList;
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -48,83 +56,56 @@ class RequestAllState extends State<RequestAll> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: requests.isEmpty
+        child: requestList.isEmpty
             ? Center(
                 child: Text(
-                  "No requests available",
+                  "No requests found",
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               )
             : ListView.builder(
-                itemCount: requests.length,
+                itemCount: requestList.length,
                 itemBuilder: (context, index) {
-                  final request = requests[index];
+                  final request = requestList[index];
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(8.0),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4.0,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  request['title'],
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4.0),
-                                Text(
-                                  request['dateTime'],
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withOpacity(0.6),
-                                      ),
-                                ),
-                              ],
+                    padding: const EdgeInsets.only(bottom: 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          request.label,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "From: ${DateFormat("dd MMM yyyy").format(request.startDate)}",
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                          ),
-                          Row(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () => approveRequest(index),
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF333333)),
-                                child: const Text("Approve"),
-                              ),
-                              const SizedBox(width: 8.0),
-                              ElevatedButton(
-                                onPressed: () => denyRequest(index),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 189, 39, 39),
-                                ),
-                                child: const Text("Deny"),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            Text(
+                              "To: ${DateFormat("dd MMM yyyy").format(request.startDate)}",
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            MyButton(
+                              text: "Accept",
+                              type: ButtonType.secondary,
+                              onTap: () {},
+                            ),
+                            const SizedBox(width: 12),
+                            MyButton(
+                              text: "Deny",
+                              onTap: () {},
+                            ),
+                          ],
+                        )
+                      ],
                     ),
                   );
                 },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gailtrack/screens/home/wrappers/box_container.dart';
 import 'package:gailtrack/screens/request/detailpage.dart';
 import 'package:gailtrack/screens/request/statcard.dart';
 
@@ -113,10 +114,11 @@ class RequestMembersState extends State<RequestMembers> {
           children: [
             // Stats Row
             const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                StatCard(title: 'Total Employees', value: '452'),
-                StatCard(title: 'Absent', value: '30'),
+                Expanded(
+                    child: StatCard(title: 'Total Employees', value: '452')),
+                SizedBox(width: 16),
+                Expanded(child: StatCard(title: 'Absent', value: '30')),
               ],
             ),
             const SizedBox(height: 16),
@@ -127,12 +129,9 @@ class RequestMembersState extends State<RequestMembers> {
                 itemCount: employees.length,
                 itemBuilder: (context, index) {
                   final employee = employees[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300, width: 1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  return BoxContainer(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: EdgeInsets.zero,
                     child: ListTile(
                       leading: Icon(
                         Icons.image,
@@ -143,6 +142,7 @@ class RequestMembersState extends State<RequestMembers> {
                       subtitle: Text(
                         employee['status'],
                         style: TextStyle(
+                          fontSize: 14,
                           color: employee['status'] == 'absent'
                               ? Colors.red
                               : Colors.green,

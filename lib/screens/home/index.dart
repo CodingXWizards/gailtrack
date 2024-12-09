@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:gailtrack/state/attendance/provider.dart';
+import 'package:gailtrack/state/request/provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gailtrack/utils/helper.dart';
@@ -27,7 +29,7 @@ class _HomeState extends State<Home> {
   final PageController _pageController = PageController();
   final List<Widget> _tabs = [
     const HomeTab(),
-    const Attendace(),
+    const Attendance(),
     const Tasks(),
     const People(),
     const More()
@@ -48,10 +50,12 @@ class _HomeState extends State<Home> {
     super.didChangeDependencies();
     checkLoggedIn();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      userProvider
-          .loadData(); // Ensure this does not trigger notifyListeners immediately
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      Provider.of<UserProvider>(context, listen: false).loadData();
+
+      Provider.of<WorkingProvider>(context, listen: false).loadWorking();
+
+      Provider.of<RequestProvider>(context, listen: false).loadRequests();
     });
   }
 
@@ -75,6 +79,7 @@ class _HomeState extends State<Home> {
     setState(() {
       isCheckingAuth = false;
     });
+
     if (authToken == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/signin');
@@ -90,6 +95,14 @@ class _HomeState extends State<Home> {
         child: CircularProgressIndicator(),
       );
     }
+
+    // final userProvider = Provider.of<UserProvider>(context);
+
+    // // Handle loading, error, and data-fetching logic inline
+    // if (userProvider.isLoading) {
+    //   return const Center(
+    //       child: CircularProgressIndicator(color: Colors.white));
+    // }
 
     return Scaffold(
       appBar: AppBar(
@@ -108,10 +121,7 @@ class _HomeState extends State<Home> {
         leading: const Icon(Icons.notifications_active_rounded),
         actions: [
           InkWell(
-            onTap: () {
-              _storage.deleteAll();
-              Navigator.popAndPushNamed(context, '/signin');
-            },
+            onTap: () {},
             child: CircleAvatar(
               radius: 16,
               backgroundColor: Theme.of(context).focusColor,
