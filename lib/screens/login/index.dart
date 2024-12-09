@@ -31,7 +31,7 @@ class _LoginState extends State<Login> {
       if (idToken == null) return false;
 
       await _storage.write(key: 'authToken', value: idToken);
-      await _storage.write(key: 'email', value: emailController.text);
+      await _storage.write(key: 'email', value: emailController.text.trim());
       return true;
     } catch (e) {
       setState(() => error = e.toString());
@@ -85,10 +85,10 @@ class _LoginState extends State<Login> {
                 ),
                 const SizedBox(height: 12),
                 MyButton(
+                  width: double.infinity,
                   text: "Sign in",
                   isLoading: isLoading,
-                  bgColor: Theme.of(context).focusColor,
-                  textColor: Theme.of(context).primaryColor,
+                  type: ButtonType.secondary,
                   onTap: () async {
                     bool isAuthenticated = await signUserIn();
                     if (mounted && isAuthenticated) {
