@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gailtrack/firebase_options.dart';
+import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import 'package:logging/logging.dart';
 import 'package:gailtrack/app/index.dart';
 import 'package:gailtrack/app/providers.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import 'controller/network_controller.dart';
+import 'controller/working_controller.dart';
 
 void main() async {
   Logger.root.level = Level.ALL;
@@ -30,4 +34,11 @@ void main() async {
 
   //* Initializes all the providers inside App Provider
   runApp(AppProviders.initialize(child: const MyApp()));
+  if (!Get.isRegistered<NetworkController>()) {
+    Get.put<NetworkController>(NetworkController(), permanent: true);
+  }
+  // Add this with other initialization code
+  if (!Get.isRegistered<WorkingController>()) {
+    Get.put<WorkingController>(WorkingController(), permanent: true);
+  }
 }
