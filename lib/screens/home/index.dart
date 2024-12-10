@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gailtrack/state/attendance/provider.dart';
 import 'package:gailtrack/state/request/provider.dart';
 import 'package:gailtrack/state/tasks/provider.dart';
+import 'package:gailtrack/websocket/tasks_service.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gailtrack/utils/helper.dart';
@@ -58,7 +59,13 @@ class _HomeState extends State<Home> {
 
       Provider.of<RequestProvider>(context, listen: false).loadRequests();
 
-      Provider.of<TaskProvider>(context, listen: false).loadtasks();
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      taskProvider.loadtasks();
+
+      print("ehllo");
+      final webSocketService = TaskWebSocketService();
+      webSocketService.setTaskProvider(taskProvider);
+      webSocketService.connect();
     });
   }
 
@@ -157,19 +164,6 @@ class _HomeState extends State<Home> {
             )
             .toList(),
       ),
-      floatingActionButton: _currentTabIndex == 2
-          ? ElevatedButton(
-              style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(
-                    Theme.of(context).primaryColor),
-                shape: WidgetStatePropertyAll<OutlinedBorder>(CircleBorder(
-                    side: BorderSide(
-                        width: 1, color: Theme.of(context).focusColor))),
-              ),
-              onPressed: () {},
-              child: const Icon(Icons.add),
-            )
-          : null,
       bottomNavigationBar: BottomNavigation(
         currentTabIndex: _currentTabIndex,
         onTap: _onTap,

@@ -47,33 +47,39 @@ class _TasksState extends State<Tasks> {
         const SizedBox(height: 28),
         Text("Today's Tasks", style: Theme.of(context).textTheme.bodyLarge),
         const SizedBox(height: 20),
-        ...taskList.map(
-          (task) => BoxContainer(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(0),
-            child: ListTile(
-              title: Text(
-                task.task,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              subtitle: Text(
-                task.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              trailing: RichText(
-                textAlign: TextAlign.right,
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                        text:
-                            "${DateFormat("dd MMM yyyy").format(task.deadline)}\n"),
-                    TextSpan(text: DateFormat("hh:mm a").format(task.deadline)),
-                  ],
+        if (taskList.isNotEmpty)
+          ...taskList.map(
+            (task) => BoxContainer(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(0),
+              child: ListTile(
+                title: Text(
+                  task.task,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                subtitle: Text(
+                  task.description,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                trailing: RichText(
+                  textAlign: TextAlign.right,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                          text:
+                              "${DateFormat("dd MMM yyyy").format(task.deadline)}\n"),
+                      TextSpan(
+                          text: DateFormat("hh:mm a").format(task.deadline)),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        )
+        if (taskList.isEmpty)
+          const Center(
+            child: Text("No Tasks Alotted"),
+          )
       ],
     );
   }

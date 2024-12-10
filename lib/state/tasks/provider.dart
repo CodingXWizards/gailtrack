@@ -24,4 +24,14 @@ class TaskProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void updateTasks(List<Task> newTasks) {
+    _taskList = newTasks;
+    notifyListeners();
+  }
+
+  void addTask(Task newTask) {
+    _taskList.add(newTask);
+    notifyListeners();
+  }
 }
