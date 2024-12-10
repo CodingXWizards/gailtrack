@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gailtrack/state/attendance/provider.dart';
 import 'package:gailtrack/state/request/provider.dart';
+import 'package:gailtrack/state/tasks/provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gailtrack/utils/helper.dart';
@@ -56,6 +57,8 @@ class _HomeState extends State<Home> {
       Provider.of<WorkingProvider>(context, listen: false).loadWorking();
 
       Provider.of<RequestProvider>(context, listen: false).loadRequests();
+
+      Provider.of<TaskProvider>(context, listen: false).loadtasks();
     });
   }
 

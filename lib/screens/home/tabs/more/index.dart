@@ -49,7 +49,7 @@ class _MoreState extends State<More> {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: Text(
                     setting['name'],
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
               ))

@@ -36,6 +36,7 @@ class Input extends StatelessWidget {
           // Text input
           TextField(
             controller: controller,
+            style: Theme.of(context).textTheme.titleSmall,
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: Theme.of(context).textTheme.bodyMedium,
@@ -71,7 +72,7 @@ class Input extends StatelessWidget {
                 controller: controller,
                 decoration: InputDecoration(
                   hintText: placeholder,
-                  hintStyle: Theme.of(context).textTheme.bodyMedium,
+                  hintStyle: Theme.of(context).textTheme.titleSmall,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
@@ -91,6 +92,7 @@ class Input extends StatelessWidget {
           TextField(
             controller: controller,
             maxLines: maxLines ?? 5,
+            style: Theme.of(context).textTheme.titleSmall,
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: Theme.of(context).textTheme.bodyMedium,
