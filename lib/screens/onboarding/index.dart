@@ -19,14 +19,13 @@ class _OnboardingState extends State<Onboarding> {
     super.initState();
     checkBiometric().then((isAvailable) {
       bool isBiometricAvailable = isAvailable;
-        if (!isBiometricAvailable) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacementNamed(context, '/');
-          });
-        }
-      });
+      if (!isBiometricAvailable) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pushReplacementNamed(context, '/');
+        });
+      }
+    });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +54,9 @@ class _OnboardingState extends State<Onboarding> {
             ),
             const SizedBox(height: 20),
             MyButton(
+                width: double.infinity,
                 text: "Continue",
-                bgColor: Theme.of(context).focusColor,
-                textColor: Theme.of(context).primaryColor,
+                type: ButtonType.secondary,
                 onTap: () => Navigator.pushReplacementNamed(context, '/'))
           ],
         ),

@@ -37,7 +37,7 @@ class BottomNavigation extends StatelessWidget {
               context: context,
               icon: Icons.calendar_month_rounded,
               index: 1,
-              label: "Calendar",
+              label: "Attendance",
             ),
             _buildNavItem(
               context: context,

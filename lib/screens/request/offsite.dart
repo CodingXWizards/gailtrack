@@ -122,18 +122,13 @@ class _RequestOffsiteState extends State<RequestOffsite> {
               Row(
                 children: [
                   Expanded(
-                    child: MyButton(
-                        text: "Cancel",
-                        bgColor: Theme.of(context).colorScheme.surface,
-                        textColor: Theme.of(context).focusColor,
-                        onTap: () {}),
+                    child: MyButton(text: "Cancel", onTap: () {}),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: MyButton(
                         text: "Confirm",
-                        bgColor: Theme.of(context).focusColor,
-                        textColor: Theme.of(context).primaryColor,
+                        type: ButtonType.secondary,
                         onTap: () {}),
                   ),
                 ],

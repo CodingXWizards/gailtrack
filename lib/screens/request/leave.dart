@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'package:gailtrack/components/my_button.dart';
+import 'package:gailtrack/components/input.dart';
+import 'package:gailtrack/state/request/model.dart';
+import 'package:gailtrack/state/request/service.dart';
 import 'package:gailtrack/state/user/model.dart';
 import 'package:gailtrack/state/user/provider.dart';
+import 'package:intl/intl.dart';
+
+import 'package:gailtrack/components/my_button.dart';
+import 'package:provider/provider.dart';
 
 class RequestLeave extends StatefulWidget {
   const RequestLeave({super.key});
@@ -21,6 +25,11 @@ class _RequestLeaveState extends State<RequestLeave> {
   Widget build(BuildContext context) {
     User user = Provider.of<UserProvider>(context).user;
 
+    TextEditingController titleController = TextEditingController();
+    TextEditingController startDateController = TextEditingController();
+    TextEditingController endDateController = TextEditingController();
+    TextEditingController reasonController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -35,80 +44,30 @@ class _RequestLeaveState extends State<RequestLeave> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "User",
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: user.displayName,
-                decoration: InputDecoration(
-                  isDense: true,
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 1, color: Theme.of(context).dividerColor)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 1, color: Theme.of(context).dividerColor)),
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: user.displayName,
-                    child: Row(
-                      children: [
-                        const CircleAvatar(
-                          backgroundImage: AssetImage('assets/profile.jpg'),
-                          radius: 16,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          user.displayName,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                onChanged: (value) {},
+              Input(
+                label: "Title",
+                placeholder: "Title of the leave",
+                controller: titleController,
               ),
               const SizedBox(height: 16),
-
-              // Title
-              Text(
-                "Title",
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: "Title of the leave",
-                  hintStyle: Theme.of(context).textTheme.bodyMedium,
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 1, color: Theme.of(context).dividerColor)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 1, color: Theme.of(context).dividerColor)),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Label
               Text(
                 "Label",
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: selectedLabel,
                 decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                           width: 1, color: Theme.of(context).dividerColor)),
                   focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                           width: 1, color: Theme.of(context).dividerColor)),
                 ),
+                borderRadius: BorderRadius.circular(12),
                 items: [
                   DropdownMenuItem(
                     value: 'Medical Leave',
@@ -138,79 +97,126 @@ class _RequestLeaveState extends State<RequestLeave> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // SelectDate
-              Text(
-                "Select Date",
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () async {
-                  DateTimeRange? picked = await showDateRangePicker(
-                    context: context,
-                    firstDate: DateTime(2024),
-                    lastDate: DateTime(2025),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      selectedDateRange = picked;
-                    });
+              Input(
+                label: "Start Date",
+                placeholder: DateFormat("dd/MM/yyyy").format(DateTime.now()),
+                controller: startDateController,
+                onDateSelected: (selectedDate) {
+                  if (selectedDate.isBefore(DateTime.now())) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          content: Text(
+                            "Start date cannot be earlier than today.",
+                            style:
+                                TextStyle(color: Theme.of(context).focusColor),
+                          )),
+                    );
+                  } else {
+                    startDateController.text =
+                        "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
+                    endDateController.text =
+                        "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
                   }
                 },
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            width: 1, color: Theme.of(context).dividerColor)),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            width: 1, color: Theme.of(context).dividerColor)),
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-                  ),
-                  child: Text(
-                    selectedDateRange == null
-                        ? 'Aug 1, 2024 - Aug 13, 2024' // Default
-                        : '${selectedDateRange!.start.toString().split(' ')[0]} - ${selectedDateRange!.end.toString().split(' ')[0]}',
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-                ),
+                type: FieldType.date,
               ),
               const SizedBox(height: 16),
+              Input(
+                label: "End Date",
+                placeholder: DateFormat("dd/MM/yyyy").format(DateTime.now()),
+                controller: endDateController,
+                onDateSelected: (selectedDate) {
+                  final startDate = startDateController.text.isNotEmpty
+                      ? DateFormat("dd/MM/yyyy").parse(startDateController.text)
+                      : null;
 
-              // Reason
-              Text(
-                "Reason",
-                style: Theme.of(context).textTheme.bodyMedium,
+                  if (startDate == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          content: Text(
+                            "Please select a start date first.",
+                            style:
+                                TextStyle(color: Theme.of(context).focusColor),
+                          )),
+                    );
+                  } else if (selectedDate.isBefore(startDate)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          content: Text(
+                            "End date cannot be earlier than the start date.",
+                            style:
+                                TextStyle(color: Theme.of(context).focusColor),
+                          )),
+                    );
+                  } else {
+                    endDateController.text =
+                        "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
+                  }
+                },
+                type: FieldType.date,
               ),
-              const SizedBox(height: 8),
-              TextField(
-                maxLines: 10,
-                decoration: InputDecoration(
-                  hintText: "I want to take an urgent leave from the office...",
-                  hintStyle: Theme.of(context).textTheme.bodyMedium,
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 1, color: Theme.of(context).dividerColor)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 1, color: Theme.of(context).dividerColor)),
-                ),
+              const SizedBox(height: 16),
+              Input(
+                label: "Reason",
+                placeholder:
+                    "I want to take an urgent leave from the office...",
+                controller: reasonController,
+                type: FieldType.textarea,
               ),
               const SizedBox(height: 32),
-
-              // Submit Button
-              Center(
-                child: SizedBox(
+              MyButton(
                   width: double.infinity,
-                  child: MyButton(
-                      text: "Request a leave",
-                      bgColor: Theme.of(context).colorScheme.surface,
-                      textColor: Theme.of(context).focusColor,
-                      onTap: () {}),
-                ),
-              ),
+                  text: "Request a leave",
+                  onTap: () async {
+                    try {
+                      // Parse dates from the controllers
+                      final startDate = DateFormat("dd/MM/yyyy")
+                          .parse(startDateController.text);
+                      final endDate = DateFormat("dd/MM/yyyy")
+                          .parse(endDateController.text);
+
+                      // Create the request object
+                      Request req = Request(
+                        id: 1, // Replace with a valid unique ID
+                        label: selectedLabel,
+                        reason: reasonController.text,
+                        startDate: startDate,
+                        endDate: endDate,
+                        uuidFirebase: user.uuidFirebase,
+                      );
+
+                      // Call the postRequest function
+                      await postRequest(req);
+
+                      // Show success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Leave request sent successfully."),
+                        ),
+                      );
+                      Navigator.of(context).pop();
+
+                      // Clear the form
+                      titleController.clear();
+                      startDateController.clear();
+                      endDateController.clear();
+                      reasonController.clear();
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          content: Text(
+                            "Failed to send leave request: $e",
+                            style:
+                                TextStyle(color: Theme.of(context).focusColor),
+                          ),
+                        ),
+                      );
+                    }
+                  }),
             ],
           ),
         ),

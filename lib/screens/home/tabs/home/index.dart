@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:gailtrack/utils/helper.dart';
+import 'package:intl/intl.dart';
 
 import 'package:provider/provider.dart';
 import 'package:gailtrack/state/user/model.dart';
 import 'package:gailtrack/state/user/provider.dart';
+import 'package:gailtrack/state/attendance/model.dart';
+import 'package:gailtrack/state/attendance/provider.dart';
 import 'package:gailtrack/screens/home/components/custom_card.dart';
 import 'package:gailtrack/screens/home/wrappers/box_container.dart';
 
@@ -17,6 +21,11 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     User user = Provider.of<UserProvider>(context).user;
+    List<Working> workingList = Provider.of<WorkingProvider>(context).working;
+    Working latestWorking = workingList.isNotEmpty
+        ? workingList.reduce((latest, current) =>
+            current.date.isAfter(latest.date) ? current : latest)
+        : Working.noWork();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -31,7 +40,7 @@ class _HomeTabState extends State<HomeTab> {
                       "Checked-in",
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    Text("8:45am",
+                    Text(latestWorking.checkIn.substring(0, 5),
                         style: Theme.of(context).textTheme.titleMedium),
                   ],
                 ),
@@ -46,7 +55,7 @@ class _HomeTabState extends State<HomeTab> {
                       "Checked-out",
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    Text("------",
+                    Text(latestWorking.checkOut.substring(0, 5),
                         style: Theme.of(context).textTheme.titleMedium),
                   ],
                 ),
@@ -62,7 +71,10 @@ class _HomeTabState extends State<HomeTab> {
                 "Working Hours",
                 style: Theme.of(context).textTheme.titleSmall,
               ),
-              Text("9 hours 7 minutes",
+              Text(
+                  workingList.isNotEmpty
+                      ? getWorkingTimeForToday(workingList)
+                      : "----",
                   style: Theme.of(context).textTheme.titleMedium),
             ],
           ),
