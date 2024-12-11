@@ -18,6 +18,13 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  bool isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+
   @override
   Widget build(BuildContext context) {
     User user = Provider.of<UserProvider>(context).user;
@@ -26,6 +33,8 @@ class _HomeTabState extends State<HomeTab> {
         ? workingList.reduce((latest, current) =>
             current.date.isAfter(latest.date) ? current : latest)
         : Working.noWork();
+
+    bool isLatestWorkingToday = isToday(latestWorking.date);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -40,8 +49,12 @@ class _HomeTabState extends State<HomeTab> {
                       "Checked-in",
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    Text(latestWorking.checkIn.substring(0, 5),
-                        style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      isLatestWorkingToday
+                          ? latestWorking.checkIn.substring(0, 5)
+                          : "---",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ],
                 ),
               ),
@@ -55,8 +68,12 @@ class _HomeTabState extends State<HomeTab> {
                       "Checked-out",
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    Text(latestWorking.checkOut.substring(0, 5),
-                        style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      isLatestWorkingToday
+                          ? latestWorking.checkOut.substring(0, 5)
+                          : "---",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ],
                 ),
               ),
@@ -72,10 +89,11 @@ class _HomeTabState extends State<HomeTab> {
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               Text(
-                  workingList.isNotEmpty
-                      ? getWorkingTimeForToday(workingList)
-                      : "----",
-                  style: Theme.of(context).textTheme.titleMedium),
+                isLatestWorkingToday && workingList.isNotEmpty
+                    ? getWorkingTimeForToday(workingList)
+                    : "---",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ],
           ),
         ),
@@ -98,7 +116,7 @@ class _HomeTabState extends State<HomeTab> {
         const SizedBox(height: 32),
         CustomCard(
           title: "Request a leave or HalfDay",
-          description: "You can request a leave from a work to your superiors.",
+          description: "You can request a leave from work to your superiors.",
           buttonText: "Request a leave",
           imagePath: "assets/images/bg1.png",
           onPressed: () => Navigator.pushNamed(context, '/request/leave'),
@@ -106,13 +124,14 @@ class _HomeTabState extends State<HomeTab> {
         const SizedBox(height: 32),
         if (user.userType == UserType.hr)
           ElevatedButton(
-              style: const ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.white)),
-              onPressed: () => Navigator.pushNamed(context, '/request/members'),
-              child: Text(
-                "Manage Members",
-                style: Theme.of(context).textTheme.labelSmall,
-              ))
+            style: const ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll<Color>(Colors.white)),
+            onPressed: () => Navigator.pushNamed(context, '/request/members'),
+            child: Text(
+              "Manage Members",
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ),
       ],
     );
   }

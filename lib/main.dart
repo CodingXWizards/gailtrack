@@ -21,6 +21,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
+  debugPrint = (String? message, {int? wrapWidth}) {
+    print(message);
+  };
 
   //* Accessing Mapbox access token from .env
   String mapboxAccessToken =

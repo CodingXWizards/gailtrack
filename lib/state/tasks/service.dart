@@ -6,7 +6,7 @@ import 'package:gailtrack/state/tasks/model.dart';
 import 'package:http/http.dart' as http;
 
 // ignore: non_constant_identifier_names
-String API_URL = dotenv.env['API_URL'] ?? "https://gailtrack-api.onrender.com";
+String API_URL = dotenv.env['API_URL'] ?? "http://192.168.1.14:5001/";
 
 Future<List<Task>> fetchTasks() async {
   String? uuidFirebase = FirebaseAuth.instance.currentUser?.uid;

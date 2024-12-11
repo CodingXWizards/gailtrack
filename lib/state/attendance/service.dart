@@ -1,12 +1,11 @@
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gailtrack/state/attendance/model.dart';
 import 'package:http/http.dart' as http;
 
 // ignore: non_constant_identifier_names
-String API_URL = dotenv.env['API_URL'] ?? "https://gailtrack-api.onrender.com";
+String API_URL = dotenv.env['API_URL'] ?? "http://192.168.1.14:5001/";
 
 Future<List<Working>> fetchWorking() async {
   String? uuidFirebase = FirebaseAuth.instance.currentUser?.uid;
