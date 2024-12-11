@@ -648,6 +648,7 @@ class NetworkController extends GetxController {
     _polygonRefreshTimer?.cancel();
     _database.close();
     _flutterLocalNotificationsPlugin.cancel(1);
+    ClockService().dispose();
     super.onClose();
   }
 }
