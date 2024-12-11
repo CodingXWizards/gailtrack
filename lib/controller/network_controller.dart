@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:gailtrack/state/user/model.dart';
+import 'package:gailtrack/state/user/service.dart';
 import 'package:get/get.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:intl/intl.dart';
@@ -43,8 +46,9 @@ class NetworkController extends GetxController {
   Timer? _polygonRefreshTimer;
 
   // API endpoints
-  static const String _apiUrl = 'https://gailtrack-api.onrender.com/currentcords';
-  static const String _getCordsUrl = 'https://gailtrack-api.onrender.com/getcords';
+  static String API_URL = dotenv.env['API_URL']?.trim() ?? "https://gailtrack-api.onrender.com";
+  static  final String _apiUrl =  API_URL + '/currentcords';
+  static  String _getCordsUrl = API_URL + 'getcords';
 
   // Polygon storage
   List<dynamic> _activePolygons = [];
@@ -53,7 +57,6 @@ class NetworkController extends GetxController {
   void onInit() async {
     // Add a check to prevent multiple initialization
 
-    print('NetworkController onInit() - Starting initialization');
 
     try {
       await _initDatabase();
@@ -74,9 +77,8 @@ class NetworkController extends GetxController {
       await _fetchPolygons();
 
       _isInitialized = true;
-      print('NetworkController onInit() - Initialization complete');
     } catch (e) {
-      print('NetworkController initialization error: $e');
+      debugPrint('NetworkController initialization error: $e');
     }
   }
 
@@ -139,7 +141,7 @@ class NetworkController extends GetxController {
   // Initialize SQLite database
   Future<void> _initDatabase() async {
     final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'offlinedb1.db');
+    final path = join(databasePath, 'offlinedb2.db');
 
     _database = await openDatabase(
       path,
@@ -148,7 +150,7 @@ class NetworkController extends GetxController {
         await db.execute('''
           CREATE TABLE locations (
             sno INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
+            user_id TEXT NOT NULL,
             lat REAL,
             long REAL,
             date TEXT,
@@ -172,9 +174,9 @@ class NetworkController extends GetxController {
         try {
           // Use permission request from notification settings
           await androidImplementation.requestNotificationsPermission();
-          print('Notification permissions request completed');
+          debugPrint('Notification permissions request completed');
         } catch (e) {
-          print('Error requesting notification permissions: $e');
+          debugPrint('Error requesting notification permissions: $e');
         }
       }
     }
@@ -207,9 +209,8 @@ class NetworkController extends GetxController {
         platformChannelSpecifics,
       );
 
-      print('Location tracking notification shown');
     } catch (e) {
-      print('Error showing location tracking notification: $e');
+      debugPrint('Error showing location tracking notification: $e');
     }
   }
 
@@ -224,12 +225,12 @@ class NetworkController extends GetxController {
         _activePolygons = (jsonDecode(response.body) as List)
             .where((polygon) => polygon['status'] == 'active')
             .toList();
-        print('Fetched ${_activePolygons.length} active polygons');
+        // debugPrint('Fetched ${_activePolygons.length} active polygons');
       } else {
-        print('Failed to fetch polygons. Status code: ${response.statusCode}');
+        debugPrint('Failed to fetch polygons. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching polygons: $e');
+      debugPrint('Error fetching polygons: $e');
     }
   }
 
@@ -271,8 +272,8 @@ class NetworkController extends GetxController {
 
 // Modified method to handle multiple polygons
   bool _isLocationInActivePolygons(double latitude, double longitude) {
-    print('Checking location: lat=$latitude, lon=$longitude');
-    print('Total active polygons: ${_activePolygons.length}');
+    // print('Checking location: lat=$latitude, lon=$longitude');
+    // print('Total active polygons: ${_activePolygons.length}');
 
     for (var polygon in _activePolygons) {
       dynamic coordinates;
@@ -285,21 +286,21 @@ class NetworkController extends GetxController {
       } else if (polygon['cords'] != null) {
         coordinates = polygon['cords'];
       } else {
-        print('Unexpected polygon coordinate structure');
+        debugPrint('Unexpected polygon coordinate structure');
         continue;
       }
 
       // Debug print for each polygon
-      print('Checking Polygon: $coordinates');
+      // print('Checking Polygon: $coordinates');
 
       try {
         if (_isPointInPolygon(latitude, longitude, coordinates)) {
-          print('Location is INSIDE the polygon');
+          // print('Location is INSIDE the polygon');
           return true;
         }
       } catch (e) {
-        print('Error checking polygon: $e');
-        print('Polygon details: $coordinates');
+        debugPrint('Error checking polygon: $e');
+        debugPrint('Polygon details: $coordinates');
       }
     }
 
@@ -333,20 +334,28 @@ class NetworkController extends GetxController {
           await workingController.performCheckIn(isInPolygon);
           await workingController.performCheckOut(isInPolygon);
 
-          // Store location in local database
-          await _database.insert('locations', {
-            'user_id': 1,
-            'lat': position.latitude,
-            'long': position.longitude,
-            'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
-            'time': DateFormat('HH:mm:ss').format(DateTime.now()),
-          });
+          try {
+            User user = await fetchUser() ;
 
-          print('Offline location stored: ${position.latitude}, ${position.longitude}');
-          print('In Polygon: $isInPolygon');
+            // Store location in local database
+            await _database.insert('locations', {
+              'user_id': user.uuidFirebase,
+              'lat': position.latitude,
+              'long': position.longitude,
+              'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
+              'time': DateFormat('HH:mm:ss').format(DateTime.now()),
+            });
+
+            // print('Offline location stored: ${position.latitude}, ${position
+            //     .longitude}');
+            // print('In Polygon: $isInPolygon');
+          }
+          catch(e){
+            debugPrint("user not logged in");
+          }
         }
       } catch (e) {
-        print('Offline location tracking error: $e');
+        debugPrint('Offline location tracking error: $e');
       }
     }
   }
@@ -380,25 +389,30 @@ class NetworkController extends GetxController {
           // Prepare payload for location upload
           final payload = {
             "user_id": "1",
-            "lat": position.latitude,
-            "lon": position.longitude,
+            "latitude": position.latitude,
+            "longitude": position.longitude,
             "date": DateFormat('dd-MM-yyyy').format(DateTime.now()),
             "Time": DateFormat('HH:mm:ss').format(DateTime.now()),
             'online': true,
             'working': isInPolygon
           };
+          try {
+            User user = await fetchUser() ;
+            // Store location in local database
+            await _database.insert('locations', {
+              'user_id': user.uuidFirebase,
+              'lat': position.latitude,
+              'long': position.longitude,
+              'date': payload['date'],
+              'time': payload['Time'],
+            });
+          }
+          catch(e){
+            debugPrint("User not logged in");
+          }
 
-          // Store location in local database
-          await _database.insert('locations', {
-            'user_id': 1,
-            'lat': position.latitude,
-            'long': position.longitude,
-            'date': payload['date'],
-            'time': payload['Time'],
-          });
-
-          print('Online location tracked: ${position.latitude}, ${position.longitude}');
-          print('In Polygon: $isInPolygon');
+          debugPrint('Online location tracked: ${position.latitude}, ${position.longitude}');
+          debugPrint('In Polygon: $isInPolygon');
         }
       } catch (e) {
         print('Online location tracking error: $e');
@@ -421,16 +435,15 @@ class NetworkController extends GetxController {
               );
 
               final payload = {
-                "user_id": "1",
-                "lat": location['lat'],
-                "lon": location['long'],
+                "uuid_firebase": location['user_id'],
+                "latitude": location['lat'],
+                "longitude": location['long'],
                 "date": location['date'],
                 "Time": location['time'],
                 'online': true,
                 'working': isInPolygon
               };
 
-              print('Uploading payload: $payload');
 
               // Upload individual location
               final response = await http.post(
@@ -446,22 +459,22 @@ class NetworkController extends GetxController {
                   where: 'sno = ?',
                   whereArgs: [location['sno']],
                 );
-                print('Location upload successful: ${location['sno']}');
+                debugPrint('Location upload successful: ${location['sno']}');
               } else {
-                print('Location upload failed. Status code: ${response.statusCode}');
+                debugPrint('Location upload failed. Status code: ${response.statusCode}');
               }
 
               // Small delay between uploads to prevent overwhelming the server
               await Future.delayed(const Duration(seconds: 5));
             } catch (individualError) {
-              print('Error uploading individual location: $individualError');
+              debugPrint('Error uploading individual location: $individualError');
             }
           }
 
-          print('Bulk location upload process completed.');
+          debugPrint('Bulk location upload process completed.');
         }
       } catch (e) {
-        print('Bulk location upload error: $e');
+        debugPrint('Bulk location upload error: $e');
       }
     }
   }
@@ -477,9 +490,9 @@ class NetworkController extends GetxController {
         );
 
         final payload = {
-          "user_id": "1",
-          "lat": location['lat'],
-          "lon": location['long'],
+          "uuid_firebase": location['user_id'],
+          "latitude": location['lat'],
+          "longitude": location['long'],
           "date": location['date'],
           "Time": location['time'],
           'online': false,
@@ -495,12 +508,12 @@ class NetworkController extends GetxController {
         if (response.statusCode == 200) {
           print('Location uploaded successfully: $payload');
         } else {
-          print(
-              'Failed to upload location. Status code: ${response.statusCode}');
+          // print(
+          //     'Failed to upload location. Status code: ${response.statusCode}');
         }
       }
     } catch (e) {
-      print('Error uploading locations: $e');
+      debugPrint('Error uploading locations: $e');
     }
   }
 
@@ -509,7 +522,6 @@ class NetworkController extends GetxController {
     if (_isDatabaseInitialized.value) {
       final locations = await _database.query('locations');
 
-      print('Stored Locations:');
       locations.forEach((location) {
         print('''
           Lat: ${location['lat']}, 

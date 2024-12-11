@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -6,17 +7,21 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../state/user/model.dart';
+import '../state/user/service.dart';
+
 class WorkingController extends GetxController {
   // Database instance
   late Database _database;
   final RxBool _isDatabaseInitialized = false.obs;
 
   // API endpoints
-  static const String _checkInUrl = 'https://gailtrack-api.onrender.com/checkin';
-  static const String _checkOutUrl = 'https://gailtrack-api.onrender.com/checkout';
+  static String API_URL = dotenv.env['API_URL']?.trim() ?? "https://gailtrack-api.onrender.com";
+  static  String _checkInUrl = API_URL + '/checkin';
+  static  String _checkOutUrl = API_URL + '/checkout';
 
   // User ID (currently hardcoded to 1)
-  static const int _userId = 1;
+  // static const int _userId = 1;
 
   @override
   void onInit() async {
@@ -27,7 +32,7 @@ class WorkingController extends GetxController {
   // Initialize SQLite database for working hours tracking
   Future<void> _initDatabase() async {
     final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'workingdb1.db');
+    final path = join(databasePath, 'dbworking10.db');
 
     _database = await openDatabase(
       path,
@@ -36,7 +41,7 @@ class WorkingController extends GetxController {
         await db.execute('''
           CREATE TABLE working (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
+            uuid_firebase TEXT NOT NULL,
             checkin TEXT,
             date TEXT,
             checkout TEXT
@@ -46,7 +51,6 @@ class WorkingController extends GetxController {
     );
 
     _isDatabaseInitialized.value = true;
-    print('Working database initialized');
   }
 
   // Check and perform check-in when user enters polygon
@@ -56,56 +60,62 @@ class WorkingController extends GetxController {
     try {
       // Get current date and time
       final now = DateTime.now();
-      final currentDate = DateFormat('yyyy-dd-MM').format(now);
+      final currentDate = DateFormat('yyyy-MM-dd').format(now);
       final currentTime = DateFormat('HH:mm:ss').format(now);
 
       // Check if there's an existing unclosed check-in for today
-      final existingCheckIns = await _database.query(
-        'working',
-        where: 'user_id = ? AND date = ? AND checkout IS NULL',
-        whereArgs: [_userId, currentDate],
-      );
+        User _userId = await fetchUser();
 
-      // If no existing unclosed check-in, perform check-in
-      if (existingCheckIns.isEmpty) {
-        // Insert new check-in record
-        final checkInId = await _database.insert('working', {
-          'user_id': _userId,
-          'checkin': currentTime,
-          'date': currentDate,
-          'checkout': null,
-        });
+        final existingCheckIns = await _database.query(
+          'working',
+          where: 'uuid_firebase = ? AND date = ? AND checkout IS NULL',
+          whereArgs: [_userId.uuidFirebase, currentDate],
+        );
 
-        // Send check-in to API
-        await _sendCheckInToServer(currentTime, currentDate);
+        // If no existing unclosed check-in, perform check-in
+        if (existingCheckIns.isEmpty) {
+          // Insert new check-in record
+          await _sendCheckInToServer(currentTime, currentDate);
+          final checkInId = await _database.insert('working', {
+            'uuid_firebase': _userId.uuidFirebase,
+            'checkin': currentTime,
+            'date': currentDate,
+            'checkout': null,
+          });
 
-        print('Check-in performed at $currentTime on $currentDate');
-      }
+          // Send check-in to API
+
+
+          debugPrint('Check-in performed at $currentTime on $currentDate');
+        }
+
     } catch (e) {
-      print('Error performing check-in: $e');
+      debugPrint('Error performing check-in: $e');
     }
   }
 
   // Send check-in to server
   Future<void> _sendCheckInToServer(String checkInTime, String date) async {
     try {
+        User user = await fetchUser();
       final response = await http.post(
         Uri.parse(_checkInUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'user_id': _userId.toString(),
+          'uuid_firebase': user.uuidFirebase,
           'checkin': checkInTime,
           'date': date,
         }),
       );
 
       if (response.statusCode == 200) {
-        print('Check-in sent to server successfully');
+        debugPrint('Check-in sent to server successfully');
       } else {
-        print('Failed to send check-in. Status code: ${response.statusCode}');
+        debugPrint('Failed to send check-in. Status code: ${response.statusCode}');
+        return;
       }
     } catch (e) {
-      print('Error sending check-in to server: $e');
+      debugPrint('Error sending check-in to server: $e');
     }
   }
 
@@ -114,15 +124,17 @@ class WorkingController extends GetxController {
     if (!_isDatabaseInitialized.value || isInPolygon) return;
 
     try {
+      User user = await fetchUser();
+      String _userId = user.uuidFirebase;
       // Get current date and time
       final now = DateTime.now();
-      final currentDate = DateFormat('yyyy-dd-MM').format(now);
+      final currentDate = DateFormat('yyyy-MM-dd').format(now);
       final currentTime = DateFormat('HH:mm:ss').format(now);
 
       // Find the latest unclosed check-in for today
       final existingCheckIns = await _database.query(
         'working',
-        where: 'user_id = ? AND date = ? AND checkout IS NULL',
+        where: 'uuid_firebase = ? AND date = ? AND checkout IS NULL',
         whereArgs: [_userId, currentDate],
         orderBy: 'id DESC',
         limit: 1,
@@ -133,44 +145,40 @@ class WorkingController extends GetxController {
         final checkInRecord = existingCheckIns.first;
         final checkInId = checkInRecord['id'] as int;
 
-        // Update the record with checkout time
-        await _database.update(
+        // Send check-out to API first
+        await _sendCheckOutToServer(currentTime, currentDate);
+
+        // Delete the check-in row after successful check-out
+        await _database.delete(
           'working',
-          {'checkout': currentTime},
           where: 'id = ?',
           whereArgs: [checkInId],
         );
 
-        // Send check-out to API
-        await _sendCheckOutToServer(currentTime, currentDate);
-
-        print('Check-out performed at $currentTime on $currentDate');
       }
     } catch (e) {
-      print('Error performing check-out: $e');
+      debugPrint('Error performing check-out: $e');
     }
   }
 
   // Send check-out to server
   Future<void> _sendCheckOutToServer(String checkOutTime, String date) async {
     try {
+      User user = await fetchUser();
+      String _userId = user.uuidFirebase;
       final response = await http.post(
         Uri.parse(_checkOutUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'user_id': _userId.toString(),
-          'checkout': checkOutTime,
-          'date': date,
+          'uuid_firebase': _userId.toString(),
+            'checkout': checkOutTime,
+          // 'date': date,
         }),
       );
 
-      if (response.statusCode == 200) {
-        print('Check-out sent to server successfully');
-      } else {
-        print('Failed to send check-out. Status code: ${response.statusCode}');
-      }
+
     } catch (e) {
-      print('Error sending check-out to server: $e');
+      debugPrint('Error sending check-out to server: $e');
     }
   }
 
