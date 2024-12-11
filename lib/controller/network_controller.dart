@@ -18,6 +18,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gailtrack/controller/working_controller.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+import '../Hazard/HazardAlertDetailsPage.dart';
+
+
 class NetworkController extends GetxController {
   // Connectivity instance
   final Connectivity _connectivity = Connectivity();
@@ -31,11 +34,14 @@ class NetworkController extends GetxController {
   final Rx<ConnectivityResult> connectionType = ConnectivityResult.none.obs;
 
   String get currentConnectionType =>
-      connectionType.value.toString().split('.').last;
+      connectionType.value
+          .toString()
+          .split('.')
+          .last;
 
   // Local Notifications
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   // Stream subscriptions
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
@@ -44,10 +50,9 @@ class NetworkController extends GetxController {
   Timer? _polygonRefreshTimer;
 
   // API endpoints
-  static String API_URL =
-      dotenv.env['API_URL']?.trim() ?? "https://gailtrack-api.onrender.com";
-  static final String _apiUrl = API_URL + '/currentcords';
-  static String _getCordsUrl = API_URL + 'getcords';
+  static String API_URL = dotenv.env['API_URL']?.trim() ?? "https://gailtrack-api.onrender.com";
+  static  final String _apiUrl =  API_URL + '/currentcords';
+  static  String _getCordsUrl = API_URL + 'getcords';
 
   // Polygon storage
   List<dynamic> _activePolygons = [];
@@ -73,6 +78,8 @@ class NetworkController extends GetxController {
           isConnected.value = false;
         },
       );
+
+
 
       // Fetch polygons on initialization
       await _fetchPolygons();
@@ -130,26 +137,55 @@ class NetworkController extends GetxController {
       );
 
       final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-          FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
       // Create an Android Notification Channel
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(channel);
 
       // Notification initialization settings
       const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
-      const InitializationSettings initializationSettings =
-          InitializationSettings(android: initializationSettingsAndroid);
+
+
+      const InitializationSettings initializationSettings = InitializationSettings(
+          android: initializationSettingsAndroid
+      );
 
       await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: (NotificationResponse details) {
           // Handle notification tap if needed
-          print('Notification tapped');
+          debugPrint('Notification tapped');
+          if (details.payload != null) {
+            try {
+              // Parse the payload
+              final Map<String, dynamic> payload =
+              jsonDecode(details.payload!) as Map<String, dynamic>;
+
+              // Get the current context
+              final BuildContext? context = Get.context;
+
+              if (context != null) {
+                // Convert duration from minutes to seconds
+                final int durationInSeconds = (payload['duration'] as int) * 60;
+
+                // Use the showHazardDetailsPage function
+                showHazardDetailsPage(
+                  context,
+                  hazard: payload['hazard'] as String,
+                  department: payload['department'] as String,
+                  duration: durationInSeconds,
+                  alertTime: DateTime.parse(payload['alertTime'] as String),
+                );
+              }
+            } catch (e) {
+              debugPrint('Error parsing notification payload: $e');
+            }
+          }
         },
       );
 
@@ -195,13 +231,12 @@ class NetworkController extends GetxController {
     _isDatabaseInitialized.value = true;
   }
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   Future<void> _requestNotificationPermission() async {
     if (Platform.isAndroid) {
       final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
       if (androidImplementation != null) {
         try {
@@ -219,7 +254,7 @@ class NetworkController extends GetxController {
   Future<void> _showLocationTrackingNotification(bool isOnline) async {
     try {
       const AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails(
+      AndroidNotificationDetails(
         'location_tracking_channel', // must match the channel id in initialization
         'Location Tracking',
         channelDescription: 'Notification for continuous location tracking',
@@ -241,6 +276,7 @@ class NetworkController extends GetxController {
             : 'Offline Mode: Location tracking and storing locally',
         platformChannelSpecifics,
       );
+
     } catch (e) {
       debugPrint('Error showing location tracking notification: $e');
     }
@@ -253,11 +289,15 @@ class NetworkController extends GetxController {
       final user = await fetchUser();
 
       // Prepare the request payload with the user's email
-      final payload = {"email": user.email};
+      final payload = {
+        "email": user.email
+      };
 
-      final response = await http.post(Uri.parse('$API_URL/getinfo'),
+      final response = await http.post(
+          Uri.parse('$API_URL/getinfo'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(payload));
+          body: jsonEncode(payload)
+      );
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
@@ -268,24 +308,22 @@ class NetworkController extends GetxController {
         // Filter and store only active polygons
         _activePolygons = fenceList
             .where((fence) =>
-                fence['status'] == 'active' &&
-                fence['cords'] != null &&
-                fence['cords']['coordinates'] != null)
+        fence['status'] == 'active' &&
+            fence['cords'] != null &&
+            fence['cords']['coordinates'] != null
+        )
             .toList();
 
-        debugPrint(
-            'Fetched ${_activePolygons.length} active polygons for department: ${user.dept}');
+        debugPrint('Fetched ${_activePolygons.length} active polygons for department: ${user.dept}');
       } else {
-        debugPrint(
-            'Failed to fetch polygons. Status code: ${response.statusCode}');
+        debugPrint('Failed to fetch polygons. Status code: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Error fetching polygons: $e');
     }
   }
 
-  bool _isPointInPolygon(
-      double latitude, double longitude, List<dynamic> polygonCoords) {
+  bool _isPointInPolygon(double latitude, double longitude, List<dynamic> polygonCoords) {
     int intersectCount = 0;
     int vertexCount = polygonCoords.length;
 
@@ -310,11 +348,8 @@ class NetworkController extends GetxController {
       // Ray-casting algorithm with explicit coordinate comparison
       bool rayIntersectsSegment =
           ((vertexILon > longitude) != (vertexJLon > longitude)) &&
-              (latitude <
-                  (vertexJLat - vertexILat) *
-                          (longitude - vertexILon) /
-                          (vertexJLon - vertexILon) +
-                      vertexILat);
+              (latitude < (vertexJLat - vertexILat) * (longitude - vertexILon) /
+                  (vertexJLon - vertexILon) + vertexILat);
 
       if (rayIntersectsSegment) {
         intersectCount++;
@@ -374,19 +409,22 @@ class NetworkController extends GetxController {
         if (permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always) {
           final Position position = await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.best);
+              desiredAccuracy: LocationAccuracy.best
+          );
 
           // Check if location is in active polygons
           final bool isInPolygon = _isLocationInActivePolygons(
-              position.latitude, position.longitude);
+              position.latitude,
+              position.longitude
+          );
 
           // Handle working check-in/check-out
-          final WorkingController workingController =
-              Get.find<WorkingController>();
+          final WorkingController workingController = Get.find<WorkingController>();
           await workingController.performCheckIn(isInPolygon);
           await workingController.performCheckOut(isInPolygon);
 
           try {
+
             // Store location in local database
             if (_currentUser.value != null) {
               await _database.insert('locations', {
@@ -397,10 +435,11 @@ class NetworkController extends GetxController {
                 'time': ClockService().getFormattedTime(),
               });
             }
-            print(
-                'Offline location stored: ${position.latitude}, ${position.longitude} , ${ClockService().getFormattedTime()}');
+            print('Offline location stored: ${position.latitude}, ${position
+                .longitude} , ${ClockService().getFormattedTime()}');
             // print('In Polygon: $isInPolygon');
-          } catch (e) {
+          }
+          catch(e){
             debugPrint("user not logged in");
           }
         }
@@ -422,15 +461,17 @@ class NetworkController extends GetxController {
         if (permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always) {
           final Position position = await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.best);
+              desiredAccuracy: LocationAccuracy.best
+          );
 
           // Check if location is in active polygons
           final bool isInPolygon = _isLocationInActivePolygons(
-              position.latitude, position.longitude);
+              position.latitude,
+              position.longitude
+          );
 
           // Handle working check-in/check-out
-          final WorkingController workingController =
-              Get.find<WorkingController>();
+          final WorkingController workingController = Get.find<WorkingController>();
           await workingController.performCheckIn(isInPolygon);
           await workingController.performCheckOut(isInPolygon);
 
@@ -447,6 +488,7 @@ class NetworkController extends GetxController {
           try {
             // Store location in local database
             if (_currentUser.value != null) {
+
               await _database.insert('locations', {
                 'user_id': _currentUser.value!.uuidFirebase,
                 'lat': position.latitude,
@@ -455,12 +497,12 @@ class NetworkController extends GetxController {
                 'time': ClockService().getFormattedTime(),
               });
             }
-          } catch (e) {
+          }
+          catch(e){
             debugPrint("User not logged in");
           }
 
-          debugPrint(
-              'Online location tracked: ${position.latitude}, ${position.longitude}, ${ClockService().getFormattedTime()}');
+          debugPrint('Online location tracked: ${position.latitude}, ${position.longitude}, ${ClockService().getFormattedTime()}');
           debugPrint('In Polygon: $isInPolygon');
         }
       } catch (e) {
@@ -479,17 +521,20 @@ class NetworkController extends GetxController {
           for (var location in locations) {
             try {
               final isInPolygon = _isLocationInActivePolygons(
-                  location['lat'] as double, location['long'] as double);
+                  location['lat'] as double,
+                  location['long'] as double
+              );
 
               final payload = {
                 "uuid_firebase": location['user_id'],
-                "latitude": location['lat'],
-                "longitude": location['long'],
+                "latitude": location['lat'].toString(),
+                "longitude": location['long'].toString(),
                 "date": location['date'],
                 "Time": location['time'],
                 'online': true,
                 'working': isInPolygon
               };
+
 
               // Upload individual location
               final response = await http.post(
@@ -507,15 +552,13 @@ class NetworkController extends GetxController {
                 );
                 debugPrint('Location upload successful: ${location['sno']}');
               } else {
-                debugPrint(
-                    'Location upload failed. Status code: ${response.statusCode}');
+                debugPrint('Location upload failed. Status code: ${response.statusCode}');
               }
 
               // Small delay between uploads to prevent overwhelming the server
               await Future.delayed(const Duration(seconds: 5));
             } catch (individualError) {
-              debugPrint(
-                  'Error uploading individual location: $individualError');
+              debugPrint('Error uploading individual location: $individualError');
             }
           }
 
@@ -532,13 +575,15 @@ class NetworkController extends GetxController {
       List<Map<String, dynamic>> locations) async {
     try {
       for (var location in locations) {
-        final isInPolygon =
-            _isLocationInActivePolygons(location['lat'], location['long']);
+        final isInPolygon = _isLocationInActivePolygons(
+            location['lat'],
+            location['long']
+        );
 
         final payload = {
           "uuid_firebase": location['user_id'],
-          "latitude": location['lat'],
-          "longitude": location['long'],
+          "latitude": location['lat'].toString(),
+          "longitude": location['long'].toString(),
           "date": location['date'],
           "Time": location['time'],
           'online': false,
@@ -593,8 +638,10 @@ class NetworkController extends GetxController {
       case ConnectivityResult.ethernet:
       case ConnectivityResult.vpn:
         isConnected.value = true;
-        _handleInternetConnection(
-            connectivityResult.toString().split('.').last);
+        _handleInternetConnection(connectivityResult
+            .toString()
+            .split('.')
+            .last);
         await _printAndClearStoredLocations();
         _offlineLocationTracker?.cancel();
 
@@ -603,14 +650,21 @@ class NetworkController extends GetxController {
 
         // Start periodic online location tracking
         _onlineLocationTracker = Timer.periodic(
-            const Duration(seconds: 10), (_) => _trackOnlineLocation());
+            const Duration(seconds: 10),
+                (_) => _trackOnlineLocation()
+        );
 
         // Start polygon refresh
         _polygonRefreshTimer = Timer.periodic(
-            const Duration(seconds: 20), (_) => _bulkUploadLocations());
+            const Duration(seconds: 20),
+                (_) => _bulkUploadLocations()
+        );
 
         // Polygon refresh every 2 hours (separate timer)
-        Timer.periodic(const Duration(hours: 2), (_) => _fetchPolygons());
+        Timer.periodic(
+            const Duration(hours: 2),
+                (_) => _fetchPolygons()
+        );
         break;
 
       case ConnectivityResult.none:
@@ -623,7 +677,9 @@ class NetworkController extends GetxController {
         _showLocationTrackingNotification(false);
 
         _offlineLocationTracker = Timer.periodic(
-            const Duration(seconds: 10), (_) => _trackOfflineLocation());
+            const Duration(seconds: 10),
+                (_) => _trackOfflineLocation()
+        );
         break;
 
       default:
@@ -671,6 +727,7 @@ class NetworkController extends GetxController {
       );
     }
   }
+
 
   // Cleanup on close
   @override
