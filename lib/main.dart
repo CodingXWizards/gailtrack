@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gailtrack/firebase_options.dart';
+import 'package:gailtrack/vpn/vpn_detector.dart';
 import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
@@ -36,7 +37,10 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   //* Initializes all the providers inside App Provider
-  runApp(AppProviders.initialize(child: const MyApp()));
+  runApp(VpnCheckWrapper(
+      child: AppProviders.initialize(child: const MyApp())
+  ));
+
   if (!Get.isRegistered<NetworkController>()) {
     Get.put<NetworkController>(NetworkController(), permanent: true);
   }
