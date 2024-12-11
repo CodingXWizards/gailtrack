@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gailtrack/firebase_options.dart';
 import 'package:gailtrack/screens/clock.dart';
 import 'package:gailtrack/vpn/vpn_detector.dart';
@@ -11,6 +12,7 @@ import 'package:gailtrack/app/index.dart';
 import 'package:gailtrack/app/providers.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'Hazard/HazardAlertservice.dart';
 import 'controller/network_controller.dart';
 import 'controller/working_controller.dart';
 
@@ -42,6 +44,24 @@ void main() async {
   runApp(VpnCheckWrapper(
       child: AppProviders.initialize(child: const MyApp())
   ));
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  // Initialize notification tap handler
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse details) {
+    },
+  );
+  final hazardAlertService = HazardAlertService();
+  hazardAlertService.initialize(dotenv.env['API_URL']!.trim());
 
   if (!Get.isRegistered<NetworkController>()) {
     Get.put<NetworkController>(NetworkController(), permanent: true);
