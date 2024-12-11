@@ -16,6 +16,8 @@ import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gailtrack/controller/working_controller.dart';
 
+import '../main.dart';
+
 
 class NetworkController extends GetxController {
   // Connectivity instance
@@ -547,32 +549,41 @@ class NetworkController extends GetxController {
       case ConnectivityResult.ethernet:
       case ConnectivityResult.vpn:
         isConnected.value = true;
-        _handleInternetConnection(connectivityResult
-            .toString()
-            .split('.')
-            .last);
+        _handleInternetConnection(connectivityResult.toString().split('.').last);
         await _printAndClearStoredLocations();
         _offlineLocationTracker?.cancel();
 
         // Show online tracking notification
         _showLocationTrackingNotification(true);
 
-        // Start periodic online location tracking
+        // Start periodic online location tracking only if locationTracking is true
         _onlineLocationTracker = Timer.periodic(
             const Duration(minutes: 1),
-                (_) => _trackOnlineLocation()
+                (_) {
+              if (locationTracking) {
+                _trackOnlineLocation();
+              }
+            }
         );
 
-        // Start polygon refresh
+        // Start polygon refresh only if locationTracking is true
         _polygonRefreshTimer = Timer.periodic(
             const Duration(minutes: 2),
-                (_) => _bulkUploadLocations()
+                (_) {
+              if (locationTracking) {
+                _bulkUploadLocations();
+              }
+            }
         );
 
         // Polygon refresh every 2 hours (separate timer)
         Timer.periodic(
             const Duration(hours: 2),
-                (_) => _fetchPolygons()
+                (_) {
+              if (locationTracking) {
+                _fetchPolygons();
+              }
+            }
         );
         break;
 
@@ -585,9 +596,14 @@ class NetworkController extends GetxController {
         // Show offline tracking notification
         _showLocationTrackingNotification(false);
 
+        // Only track offline location if locationTracking is true
         _offlineLocationTracker = Timer.periodic(
             const Duration(minutes: 10),
-                (_) => _trackOfflineLocation()
+                (_) {
+              if (locationTracking) {
+                _trackOfflineLocation();
+              }
+            }
         );
         break;
 

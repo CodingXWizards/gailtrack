@@ -13,6 +13,17 @@ import 'package:firebase_core/firebase_core.dart';
 import 'controller/network_controller.dart';
 import 'controller/working_controller.dart';
 
+// Global location tracking flag
+bool _locationTracking = true;
+
+// Getter for location tracking
+bool get locationTracking => _locationTracking;
+
+// Setter for location tracking
+void setLocationTracking(bool value) {
+  _locationTracking = value;
+}
+
 void main() async {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {

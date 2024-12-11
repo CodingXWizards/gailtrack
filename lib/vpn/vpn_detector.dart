@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:async';
+import 'package:gailtrack/main.dart'; // Import the main file to access setLocationTracking
 
 class VpnDetectorService {
   static Timer? _vpnCheckTimer;
@@ -38,6 +39,9 @@ class VpnDetectorService {
       if (isVpnActive) {
         // Stop the timer if VPN is detected
         timer.cancel();
+
+        // Set location tracking to false when VPN is detected
+        setLocationTracking(false);
       }
     });
   }
@@ -86,6 +90,9 @@ class _VpnCheckWrapperState extends State<VpnCheckWrapper> {
       valueListenable: VpnDetectorService.vpnStatusNotifier,
       builder: (context, isVpnActive, child) {
         if (isVpnActive) {
+          // Set location tracking to false when VPN is detected
+          setLocationTracking(false);
+
           return MaterialApp(
             home: Scaffold(
               appBar: AppBar(
