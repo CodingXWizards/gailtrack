@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:gailtrack/screens/clock.dart';
 import 'package:gailtrack/state/user/model.dart';
 import 'package:gailtrack/state/user/service.dart';
 import 'package:get/get.dart';
@@ -343,11 +344,11 @@ class NetworkController extends GetxController {
               'lat': position.latitude,
               'long': position.longitude,
               'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
-              'time': DateFormat('HH:mm:ss').format(DateTime.now()),
+              'time': ClockService().getFormattedTime(),
             });
 
-            // print('Offline location stored: ${position.latitude}, ${position
-            //     .longitude}');
+            print('Offline location stored: ${position.latitude}, ${position
+                .longitude} , ${ClockService().getFormattedTime()}');
             // print('In Polygon: $isInPolygon');
           }
           catch(e){
@@ -392,7 +393,7 @@ class NetworkController extends GetxController {
             "latitude": position.latitude,
             "longitude": position.longitude,
             "date": DateFormat('dd-MM-yyyy').format(DateTime.now()),
-            "Time": DateFormat('HH:mm:ss').format(DateTime.now()),
+            "Time": ClockService().getFormattedTime(),
             'online': true,
             'working': isInPolygon
           };
@@ -411,7 +412,7 @@ class NetworkController extends GetxController {
             debugPrint("User not logged in");
           }
 
-          debugPrint('Online location tracked: ${position.latitude}, ${position.longitude}');
+          debugPrint('Online location tracked: ${position.latitude}, ${position.longitude}, ${ClockService().getFormattedTime()}');
           debugPrint('In Polygon: $isInPolygon');
         }
       } catch (e) {

@@ -1,80 +1,64 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ClockApp extends StatelessWidget {
-  const ClockApp({super.key});
+class ClockService {
+  static final ClockService _instance = ClockService._internal();
+  factory ClockService() => _instance;
+  ClockService._internal();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Persistent Independent Clock"),
-        ),
-        body: const Center(
-          child: IndependentClock(),
-        ),
-      ),
-    );
-  }
-}
-
-class IndependentClock extends StatefulWidget {
-  const IndependentClock({super.key});
-
-  @override
-  State<IndependentClock> createState() => _IndependentClockState();
-}
-
-class _IndependentClockState extends State<IndependentClock> {
   late Timer _timer;
-  late int _hours;
-  late int _minutes;
-  late int _seconds;
+  int _hours = 12;
+  int _minutes = 0;
+  int _seconds = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeClock();
+  Future<void> initialize() async {
+    await _initializeClock();
   }
 
   Future<void> _initializeClock() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastSavedTimestamp = prefs.getInt('lastSavedTimestamp');
-    if (lastSavedTimestamp == null) {
-      // Initialize with a custom starting time
-      _hours = 12;
-      _minutes = 0;
-      _seconds = 0;
-    } else {
-      // Calculate the elapsed time since the app was closed
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final elapsed = now - lastSavedTimestamp;
-      final elapsedSeconds = (elapsed ~/ 1000) % 60;
-      final elapsedMinutes = (elapsed ~/ 1000 ~/ 60) % 60;
-      final elapsedHours = (elapsed ~/ 1000 ~/ 60 ~/ 60) % 24;
+    try {
+      // Fetch time from the new API (timezonedb.com) for Kolkata
+      final response = await http.get(Uri.parse('https://api.timezonedb.com/v2.1/get-time-zone?key=B7COYERF6GPP&format=json&by=zone&zone=Asia/Kolkata'))
+          .timeout(const Duration(seconds: 10)); // Add a timeout
 
-      _seconds = elapsedSeconds;
-      _minutes = elapsedMinutes;
-      _hours = elapsedHours;
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        // Extract the formatted time string from the API response
+        String formattedTime = data['formatted'];
+        // Parse the datetime string into a DateTime object
+        DateTime kolkataTime = DateTime.parse(formattedTime);
+
+        // Set the initial time
+        _hours = kolkataTime.hour;
+        _minutes = kolkataTime.minute;
+        _seconds = kolkataTime.second;
+      } else {
+        // Fallback to system time if API call fails
+        _setSystemTime();
+      }
+    } catch (e) {
+      // If any error occurs (network, parsing, etc.), use system time
+      print('Error fetching time: $e');
+      _setSystemTime();
     }
 
     _startClock();
   }
 
-  void _startClock() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _incrementTime();
-      });
-    });
+  void _setSystemTime() {
+    // Use current system time
+    DateTime now = DateTime.now();
+    _hours = now.hour;
+    _minutes = now.minute;
+    _seconds = now.second;
   }
 
-  Future<void> _saveClockState() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('lastSavedTimestamp', DateTime.now().millisecondsSinceEpoch);
+  void _startClock() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _incrementTime();
+    });
   }
 
   void _incrementTime() {
@@ -92,22 +76,19 @@ class _IndependentClockState extends State<IndependentClock> {
     }
   }
 
-  @override
+  Future<void> _saveClockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('lastSavedTimestamp', DateTime.now().millisecondsSinceEpoch);
+  }
+
+  String getFormattedTime() {
+    return "${_hours.toString().padLeft(2, '0')}:" +
+        "${_minutes.toString().padLeft(2, '0')}:" +
+        "${_seconds.toString().padLeft(2, '0')}";
+  }
+
   void dispose() {
     _saveClockState();
     _timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      _formattedTime(),
-      style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-    );
-  }
-
-  String _formattedTime() {
-    return "${_hours.toString().padLeft(2, '0')}:${_minutes.toString().padLeft(2, '0')}:${_seconds.toString().padLeft(2, '0')}";
   }
 }

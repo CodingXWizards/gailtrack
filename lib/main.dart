@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gailtrack/firebase_options.dart';
+import 'package:gailtrack/screens/clock.dart';
 import 'package:gailtrack/vpn/vpn_detector.dart';
 import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -35,6 +36,7 @@ void main() async {
 
   //* Initializing Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  ClockService().initialize();
 
   //* Initializes all the providers inside App Provider
   runApp(VpnCheckWrapper(
