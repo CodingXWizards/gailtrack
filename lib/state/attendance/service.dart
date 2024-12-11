@@ -32,6 +32,8 @@ Future<List<Working>> fetchWorking() async {
     final List<Working> workings = workingList
         .map<Working>((working) => Working.fromJson(working))
         .toList();
+
+    print(workings);
     return workings;
   } catch (e) {
     throw Exception(e);

@@ -25,21 +25,52 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final _storage = const FlutterSecureStorage();
   bool isSignedIn = false;
-  bool isCheckingAuth = true; // Added to track loading state
+  bool isCheckingAuth = true;
 
   int _currentTabIndex = 0;
   final PageController _pageController = PageController();
-  final List<Widget> _tabs = [
-    const HomeTab(),
-    const Attendance(),
-    const Tasks(),
-    const People(),
-    const More()
-  ];
+  final Map<int, Widget> _loadedTabs = {};
+
+  final Map<int, Future<Widget>> _tabs = {
+    0: Future.value(const HomeTab()),
+    1: Future.value(const Attendance()),
+    2: Future.value(const Tasks()),
+    3: Future.value(const People()),
+    4: Future.value(const More()),
+  };
 
   void _onTap(int index) {
-    //* Triggers Page Change and applies animation
+    setState(() {
+      _currentTabIndex = index;
+    });
     _pageController.jumpToPage(index);
+  }
+
+  Future<Widget> _loadTabContent(int index) async {
+    // Simulate sideloading with a delay or actual API call
+    await Future.delayed(const Duration(seconds: 1));
+    return _tabs[index]!;
+  }
+
+  Widget _getTabContent(int index) {
+    if (_loadedTabs.containsKey(index)) {
+      return _loadedTabs[index]!;
+    } else {
+      return FutureBuilder<Widget>(
+        future: _loadTabContent(index),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error loading tab: ${snapshot.error}'));
+          } else {
+            final tab = snapshot.data!;
+            _loadedTabs[index] = tab;
+            return tab;
+          }
+        },
+      );
+    }
   }
 
   @override
@@ -54,15 +85,12 @@ class _HomeState extends State<Home> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       Provider.of<UserProvider>(context, listen: false).loadData();
-
       Provider.of<WorkingProvider>(context, listen: false).loadWorking();
-
       Provider.of<RequestProvider>(context, listen: false).loadRequests();
 
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
       taskProvider.loadtasks();
 
-      print("ehllo");
       final webSocketService = TaskWebSocketService();
       webSocketService.setTaskProvider(taskProvider);
       webSocketService.connect();
@@ -79,13 +107,12 @@ class _HomeState extends State<Home> {
       if (authenticated) {
         setState(() {
           isSignedIn = true;
-          isCheckingAuth = false; // Stop the loading state
+          isCheckingAuth = false;
         });
         return;
       }
     }
 
-    // If not authenticated or auth fails
     setState(() {
       isCheckingAuth = false;
     });
@@ -99,35 +126,25 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    // Loading indicator while checking authentication
     if (isCheckingAuth) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
-
-    // final userProvider = Provider.of<UserProvider>(context);
-
-    // // Handle loading, error, and data-fetching logic inline
-    // if (userProvider.isLoading) {
-    //   return const Center(
-    //       child: CircularProgressIndicator(color: Colors.white));
-    // }
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-            _currentTabIndex == 0
-                ? "Home"
-                : _currentTabIndex == 1
-                    ? "Attendance"
-                    : _currentTabIndex == 2
-                        ? "Tasks"
-                        : _currentTabIndex == 31
-                            ? "People"
-                            : "More",
-            style: Theme.of(context).textTheme.titleSmall),
+          _currentTabIndex == 0
+              ? "Home"
+              : _currentTabIndex == 1
+                  ? "Attendance"
+                  : _currentTabIndex == 2
+                      ? "Tasks"
+                      : _currentTabIndex == 3
+                          ? "People"
+                          : "More",
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         leading: const Icon(Icons.notifications_active_rounded),
         actions: [
           InkWell(
@@ -143,26 +160,18 @@ class _HomeState extends State<Home> {
               ),
             ),
           ),
-          const SizedBox(width: 12)
+          const SizedBox(width: 12),
         ],
       ),
-      body: PageView(
+      body: PageView.builder(
         controller: _pageController,
+        itemCount: _tabs.length,
         onPageChanged: (index) {
           setState(() {
             _currentTabIndex = index;
           });
         },
-        children: _tabs
-            .map(
-              (tab) => SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: tab,
-                ),
-              ),
-            )
-            .toList(),
+        itemBuilder: (context, index) => _getTabContent(index),
       ),
       bottomNavigationBar: BottomNavigation(
         currentTabIndex: _currentTabIndex,

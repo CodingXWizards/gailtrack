@@ -37,7 +37,7 @@ class _CalendarState extends State<Calendar> {
       },
       {
         "label": "Check-Out",
-        "value": latestWorking.checkOut.substring(0, 5),
+        "value": latestWorking.checkOut?.substring(0, 5) ?? "---",
       },
       {
         "label": "Working Hours",
