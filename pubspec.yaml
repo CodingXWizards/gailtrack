@@ -55,6 +55,7 @@ dependencies:
   path: ^1.9.0
   point_in_polygon: ^1.0.0
   flutter_local_notifications: ^18.0.1
+  socket_io_client: ^3.0.2
 
 
 

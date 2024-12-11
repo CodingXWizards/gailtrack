@@ -16,6 +16,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gailtrack/controller/working_controller.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 
 class NetworkController extends GetxController {
@@ -54,12 +55,16 @@ class NetworkController extends GetxController {
   // Polygon storage
   List<dynamic> _activePolygons = [];
 
+  final Rx<User?> _currentUser = Rx<User?>(null);
+  User? get currentUser => _currentUser.value;
+
+  IO.Socket? _socket;
+
   @override
   void onInit() async {
     // Add a check to prevent multiple initialization
-
-
     try {
+      _currentUser.value = await fetchUser();
       await _initDatabase();
       await _requestNotificationPermission();
       await _initializeNotifications();
@@ -78,8 +83,42 @@ class NetworkController extends GetxController {
       await _fetchPolygons();
 
       _isInitialized = true;
+      _initializeSocket();
     } catch (e) {
       debugPrint('NetworkController initialization error: $e');
+      _currentUser.value = null;
+    }
+  }
+
+  void _initializeSocket() {
+    try {
+      // Use the base API_URL, removing any trailing slashes
+      String socketUrl = API_URL.replaceAll(RegExp(r'\/+$'), '');
+
+      _socket = IO.io(socketUrl, <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': true,
+      });
+
+      _socket?.on('connect', (_) {
+        debugPrint('Socket connected');
+      });
+
+      // Listen for fence updates
+      _socket?.on('updatedfence', (data) {
+        debugPrint('Received fence update: $data');
+        _fetchPolygons(); // Fetch polygons when update is received
+      });
+
+      _socket?.on('disconnect', (_) {
+        debugPrint('Socket disconnected');
+      });
+
+      _socket?.on('connect_error', (error) {
+        debugPrint('Socket connection error: $error');
+      });
+    } catch (e) {
+      debugPrint('Socket initialization error: $e');
     }
   }
 
@@ -218,15 +257,36 @@ class NetworkController extends GetxController {
   // Fetch active polygons
   Future<void> _fetchPolygons() async {
     try {
-      final response = await http.get(
-          Uri.parse(_getCordsUrl)
+      // Use the existing fetchUser method to get the current user
+      final user = await fetchUser();
+
+      // Prepare the request payload with the user's email
+      final payload = {
+        "email": user.email
+      };
+
+      final response = await http.post(
+          Uri.parse('$API_URL/getinfo'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(payload)
       );
 
       if (response.statusCode == 200) {
-        _activePolygons = (jsonDecode(response.body) as List)
-            .where((polygon) => polygon['status'] == 'active')
+        final responseBody = jsonDecode(response.body);
+
+        // Extract the fence list from the response
+        final List fenceList = responseBody['fence'] ?? [];
+
+        // Filter and store only active polygons
+        _activePolygons = fenceList
+            .where((fence) =>
+        fence['status'] == 'active' &&
+            fence['cords'] != null &&
+            fence['cords']['coordinates'] != null
+        )
             .toList();
-        // debugPrint('Fetched ${_activePolygons.length} active polygons');
+
+        debugPrint('Fetched ${_activePolygons.length} active polygons for department: ${user.dept}');
       } else {
         debugPrint('Failed to fetch polygons. Status code: ${response.statusCode}');
       }
@@ -336,17 +396,17 @@ class NetworkController extends GetxController {
           await workingController.performCheckOut(isInPolygon);
 
           try {
-            User user = await fetchUser() ;
 
             // Store location in local database
-            await _database.insert('locations', {
-              'user_id': user.uuidFirebase,
-              'lat': position.latitude,
-              'long': position.longitude,
-              'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
-              'time': ClockService().getFormattedTime(),
-            });
-
+            if (_currentUser.value != null) {
+              await _database.insert('locations', {
+                'user_id': _currentUser.value!.uuidFirebase,
+                'lat': position.latitude,
+                'long': position.longitude,
+                'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
+                'time': ClockService().getFormattedTime(),
+              });
+            }
             print('Offline location stored: ${position.latitude}, ${position
                 .longitude} , ${ClockService().getFormattedTime()}');
             // print('In Polygon: $isInPolygon');
@@ -398,15 +458,17 @@ class NetworkController extends GetxController {
             'working': isInPolygon
           };
           try {
-            User user = await fetchUser() ;
             // Store location in local database
-            await _database.insert('locations', {
-              'user_id': user.uuidFirebase,
-              'lat': position.latitude,
-              'long': position.longitude,
-              'date': payload['date'],
-              'time': payload['Time'],
-            });
+            if (_currentUser.value != null) {
+
+              await _database.insert('locations', {
+                'user_id': _currentUser.value!.uuidFirebase,
+                'lat': position.latitude,
+                'long': position.longitude,
+                'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
+                'time': ClockService().getFormattedTime(),
+              });
+            }
           }
           catch(e){
             debugPrint("User not logged in");
@@ -560,13 +622,13 @@ class NetworkController extends GetxController {
 
         // Start periodic online location tracking
         _onlineLocationTracker = Timer.periodic(
-            const Duration(minutes: 1),
+            const Duration(seconds: 10),
                 (_) => _trackOnlineLocation()
         );
 
         // Start polygon refresh
         _polygonRefreshTimer = Timer.periodic(
-            const Duration(minutes: 2),
+            const Duration(seconds: 20),
                 (_) => _bulkUploadLocations()
         );
 
@@ -587,7 +649,7 @@ class NetworkController extends GetxController {
         _showLocationTrackingNotification(false);
 
         _offlineLocationTracker = Timer.periodic(
-            const Duration(minutes: 10),
+            const Duration(seconds: 10),
                 (_) => _trackOfflineLocation()
         );
         break;
@@ -649,6 +711,8 @@ class NetworkController extends GetxController {
     _database.close();
     _flutterLocalNotificationsPlugin.cancel(1);
     ClockService().dispose();
+    _socket?.dispose();
+    _socket = null;
     super.onClose();
   }
 }
