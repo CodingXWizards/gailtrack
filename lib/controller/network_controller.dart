@@ -62,6 +62,23 @@ class NetworkController extends GetxController {
 
   IO.Socket? _socket;
 
+  bool _isLocationInCircle(
+      double latitude,
+      double longitude,
+      double centerLat,
+      double centerLng,
+      double radius
+      ) {
+    // Calculate the distance between the point and the circle's center
+    double distance = Geolocator.distanceBetween(
+        centerLat,
+        centerLng,
+        latitude,
+        longitude
+    );
+    return distance <= radius;
+  }
+
   @override
   void onInit() async {
     // Add a check to prevent multiple initialization
@@ -361,11 +378,14 @@ class NetworkController extends GetxController {
 
 // Modified method to handle multiple polygons
   bool _isLocationInActivePolygons(double latitude, double longitude) {
-    // print('Checking location: lat=$latitude, lon=$longitude');
-    // print('Total active polygons: ${_activePolygons.length}');
-
     for (var polygon in _activePolygons) {
       dynamic coordinates;
+      String geofenceType = 'Polygon'; // Default to Polygon
+
+      // Determine the geofence type and coordinates
+      if (polygon['cords'] != null && polygon['cords']['type'] != null) {
+        geofenceType = polygon['cords']['type'];
+      }
 
       // Handle different possible coordinate structures
       if (polygon['cords'] != null && polygon['cords']['coordinates'] != null) {
@@ -379,21 +399,41 @@ class NetworkController extends GetxController {
         continue;
       }
 
-      // Debug print for each polygon
-      // print('Checking Polygon: $coordinates');
-
       try {
-        if (_isPointInPolygon(latitude, longitude, coordinates)) {
-          // print('Location is INSIDE the polygon');
-          return true;
+        // Check based on geofence type
+        if (geofenceType == 'Polygon') {
+          // Existing polygon check
+          if (_isPointInPolygon(latitude, longitude, coordinates)) {
+            return true;
+          }
+        } else if (geofenceType == 'Circle') {
+          // New circle check
+          // Assuming circle coordinates are in the format:
+          // [{"lat": centerLat, "lng": centerLng, "radius": radius}]
+          if (coordinates.isNotEmpty) {
+            final circleData = coordinates[0];
+            final centerLat = circleData['lat'] is double
+                ? circleData['lat']
+                : double.parse(circleData['lat'].toString());
+            final centerLng = circleData['lng'] is double
+                ? circleData['lng']
+                : double.parse(circleData['lng'].toString());
+            final radius = circleData['radius'] is double
+                ? circleData['radius']
+                : double.parse(circleData['radius'].toString());
+
+            if (_isLocationInCircle(latitude, longitude, centerLat, centerLng, radius)) {
+              return true;
+            }
+          }
         }
       } catch (e) {
-        debugPrint('Error checking polygon: $e');
-        debugPrint('Polygon details: $coordinates');
+        debugPrint('Error checking geofence: $e');
+        debugPrint('Geofence details: $coordinates');
       }
     }
 
-    print('Location is OUTSIDE all polygons');
+    print('Location is OUTSIDE all geofences');
     return false;
   }
 
