@@ -110,8 +110,9 @@ class _RequestOffsiteState extends State<RequestOffsite>
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Failed to submit location: ${response.body}')),
+              content: Text('Send the request to the admin ${response.body}')),
         );
+        Navigator.of(context).pop();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
