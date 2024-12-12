@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class Working {
   int id;
   String checkIn;
@@ -67,5 +69,16 @@ class Working {
       return DateTime.now().difference(checkInDateTime);
     }
     return workingDuration;
+  }
+
+  Duration getTotalWorkingDuration() {
+    if (checkIn.isNotEmpty && checkOut != null && checkOut!.isNotEmpty) {
+      final checkInTime =
+          DateFormat.jm().parse(checkIn); // Assuming check-in time is a string.
+      final checkOutTime = DateFormat.jm()
+          .parse(checkOut!); // Assuming check-out time is a string.
+      return checkOutTime.difference(checkInTime);
+    }
+    return Duration.zero;
   }
 }

@@ -50,13 +50,18 @@ class WorkingProvider extends ChangeNotifier {
     try {
       final newEntry = Working.fromJson(eventData);
 
+      // Print for debugging to ensure the check-out data is received
+      print('Received check-out data: ${newEntry.checkOut}');
+
       // Update the existing entry if it matches, otherwise add a new one
       final existingIndex =
           _working.indexWhere((entry) => entry.id == newEntry.id);
       if (existingIndex != -1) {
         _working[existingIndex] = newEntry;
+        print('Updated existing entry with ID: ${newEntry.id}');
       } else {
         _working.add(newEntry);
+        print('Added new entry with ID: ${newEntry.id}');
       }
 
       notifyListeners();

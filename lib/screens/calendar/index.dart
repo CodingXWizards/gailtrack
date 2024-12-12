@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gailtrack/state/attendance/model.dart';
 import 'package:gailtrack/state/attendance/provider.dart';
-import 'package:gailtrack/utils/helper.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -19,13 +18,44 @@ class _CalendarState extends State<Calendar> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the working data
     List<Working> workingList =
         Provider.of<WorkingProvider>(context, listen: false).working;
-    Working latestWorking = workingList.isNotEmpty
-        ? workingList.reduce((latest, current) =>
-            current.date.isAfter(latest.date) ? current : latest)
-        : Working.noWork();
 
+    // Filter working sessions for the selected day
+    List<Working> getWorkingForDay(DateTime day) {
+      return workingList
+          .where((working) => isSameDay(working.date, day))
+          .toList();
+    }
+
+    List<Working> selectedDayWorkingList =
+        getWorkingForDay(_selectedDay ?? _focusedDay);
+
+    // Function to calculate the total working hours for the day
+    String calculateTotalWorkingHours(List<Working> workingList) {
+      if (workingList.isEmpty) return '---';
+
+      Duration totalDuration = Duration();
+
+      for (var working in workingList) {
+        if (working.checkIn.isEmpty) continue;
+
+        DateTime checkIn = DateFormat('HH:mm').parse(working.checkIn);
+        DateTime checkOut =
+            working.checkOut != null && working.checkOut!.isNotEmpty
+                ? DateFormat('HH:mm').parse(working.checkOut!)
+                : DateTime.now(); // If check-out is null, use current time
+
+        totalDuration += checkOut.difference(checkIn);
+      }
+
+      int hours = totalDuration.inHours;
+      int minutes = totalDuration.inMinutes % 60;
+      return '${hours > 0 ? '$hours h ' : ''}${minutes > 0 ? '$minutes m' : ''}';
+    }
+
+    // Prepare the table data for both selected and focused days
     List<Map<String, String>> tableData = [
       {
         "label": "Date",
@@ -33,17 +63,19 @@ class _CalendarState extends State<Calendar> {
       },
       {
         "label": "Check-In",
-        "value": latestWorking.checkIn.substring(0, 5),
+        "value": selectedDayWorkingList.isNotEmpty
+            ? selectedDayWorkingList.first.checkIn.substring(0, 5)
+            : "---",
       },
       {
         "label": "Check-Out",
-        "value": latestWorking.checkOut?.substring(0, 5) ?? "---",
+        "value": selectedDayWorkingList.isNotEmpty
+            ? selectedDayWorkingList.last.checkOut?.substring(0, 5) ?? "---"
+            : "---",
       },
       {
         "label": "Working Hours",
-        "value": workingList.isNotEmpty
-            ? getWorkingTimeForToday(workingList)
-            : "----",
+        "value": calculateTotalWorkingHours(selectedDayWorkingList),
       },
     ];
 

@@ -17,18 +17,38 @@ class HomeTab extends StatelessWidget {
         date.day == now.day;
   }
 
+  // Method to calculate total working time for today
+  String getTotalWorkingTime(List<Working> workingList) {
+    Duration totalDuration = Duration.zero;
+
+    for (var working in workingList) {
+      if (isToday(working.date)) {
+        final checkInTime = DateTime.parse("2021-01-01 " + working.checkIn);
+        DateTime checkOutTime;
+
+        if (working.checkOut == null || working.checkOut!.isEmpty) {
+          checkOutTime =
+              DateTime.now(); // If checkOut is null, use current time
+        } else {
+          checkOutTime = DateTime.parse("2021-01-01 " + working.checkOut!);
+        }
+
+        totalDuration += checkOutTime.difference(checkInTime);
+      }
+    }
+
+    final hours = totalDuration.inHours;
+    final minutes = totalDuration.inMinutes % 60;
+
+    return (hours > 0) ? '${hours}h ${minutes}m' : '${minutes}m';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<UserProvider, WorkingProvider>(
       builder: (context, userProvider, workingProvider, child) {
         User user = userProvider.user;
         List<Working> workingList = workingProvider.working;
-        Working latestWorking = workingList.isNotEmpty
-            ? workingList.reduce(
-                (latest, current) => current.id > latest.id ? current : latest)
-            : Working.noWork();
-
-        bool isLatestWorkingToday = isToday(latestWorking.date);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -44,9 +64,9 @@ class HomeTab extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         Text(
-                          isLatestWorkingToday &&
-                                  latestWorking.checkIn.isNotEmpty
-                              ? latestWorking.checkIn.substring(0, 5)
+                          workingList.isNotEmpty &&
+                                  workingList.last.checkIn.isNotEmpty
+                              ? workingList.last.checkIn.substring(0, 5)
                               : "---",
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
@@ -64,9 +84,10 @@ class HomeTab extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         Text(
-                          isLatestWorkingToday &&
-                                  (latestWorking.checkOut?.isNotEmpty ?? false)
-                              ? latestWorking.checkOut!.substring(0, 5)
+                          workingList.isNotEmpty &&
+                                  (workingList.last.checkOut?.isNotEmpty ??
+                                      false)
+                              ? workingList.last.checkOut!.substring(0, 5)
                               : "---",
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
@@ -81,16 +102,11 @@ class HomeTab extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    "Working Hours",
+                    "Working Hours Today",
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   Text(
-                    isLatestWorkingToday && workingList.isNotEmpty
-                        ? (latestWorking.getCurrentWorkingDuration().inHours > 0
-                            ? '${latestWorking.getCurrentWorkingDuration().inHours}h '
-                                '${latestWorking.getCurrentWorkingDuration().inMinutes % 60}m'
-                            : '${latestWorking.getCurrentWorkingDuration().inMinutes}m')
-                        : "---",
+                    getTotalWorkingTime(workingList),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -100,7 +116,7 @@ class HomeTab extends StatelessWidget {
             CustomCard(
               title: user.userType == UserType.hr
                   ? "Check Requests"
-                  : "Offisite Work",
+                  : "Offsite Work",
               description: user.userType == UserType.hr
                   ? "You can check your employee requests take action upon it."
                   : "You can request to work offsite if you're unable to come in.",
@@ -109,9 +125,10 @@ class HomeTab extends StatelessWidget {
                   : "Request Offsite Work",
               imagePath: "assets/images/bg1.png",
               onPressed: () => Navigator.of(context).pushNamed(
-                  user.userType == UserType.hr
-                      ? "/request/all"
-                      : "/request/offsite"),
+                user.userType == UserType.hr
+                    ? "/request/all"
+                    : "/request/offsite",
+              ),
             ),
             const SizedBox(height: 32),
             CustomCard(
@@ -125,9 +142,7 @@ class HomeTab extends StatelessWidget {
             const SizedBox(height: 32),
             if (user.userType == UserType.hr)
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () =>
                     Navigator.pushNamed(context, '/request/members'),
                 child: Text(

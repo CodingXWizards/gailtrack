@@ -1,10 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:provider/provider.dart';
-
-import 'package:gailtrack/state/user/model.dart';
-import 'package:gailtrack/components/my_button.dart';
-import 'package:gailtrack/state/user/provider.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 
 class RequestOffsite extends StatefulWidget {
   const RequestOffsite({super.key});
@@ -13,129 +12,245 @@ class RequestOffsite extends StatefulWidget {
   State<RequestOffsite> createState() => _RequestOffsiteState();
 }
 
-class _RequestOffsiteState extends State<RequestOffsite> {
-  // late MapboxMap _mapboxMap;
-  String selectedLocation = 'Mumbai, Office';
+class _RequestOffsiteState extends State<RequestOffsite>
+    with WidgetsBindingObserver {
+  LatLng? selectedLatLng;
+  LatLng initialLocation = LatLng(20.5937, 78.9629); // Centered on India
+  final TextEditingController searchController = TextEditingController();
+  List<dynamic> suggestions = [];
+  Timer? _debounce;
+  bool isLoading = false;
+  final MapController mapController = MapController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    searchController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Fetch location suggestions restricted to India
+  Future<void> fetchSuggestions(String query) async {
+    if (query.isEmpty) {
+      setState(() => suggestions = []);
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final url =
+        "https://nominatim.openstreetmap.org/search?q=$query,India&format=json&addressdetails=1&limit=5";
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final results = json.decode(response.body);
+        setState(() {
+          suggestions = results;
+        });
+      } else {
+        setState(() => suggestions = []);
+      }
+    } catch (_) {
+      setState(() => suggestions = []);
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // Update map and clear suggestions
+  void selectSuggestion(dynamic suggestion) {
+    final lat = double.parse(suggestion['lat']);
+    final lon = double.parse(suggestion['lon']);
+    setState(() {
+      initialLocation = LatLng(lat, lon);
+      selectedLatLng = initialLocation;
+      suggestions = [];
+      searchController.text = suggestion['display_name'];
+    });
+    mapController.move(initialLocation, 14.0);
+  }
+
+  // Send POST request with location data
+  Future<void> submitLocation() async {
+    if (selectedLatLng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a location first.')),
+      );
+      return;
+    }
+
+    final url = Uri.parse(
+        'https://example.com/api/submit-location'); // Replace with actual API URL
+    final body = jsonEncode({
+      "latitude": selectedLatLng!.latitude,
+      "longitude": selectedLatLng!.longitude,
+      "location": searchController.text,
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location submitted successfully!')),
+        );
+        Navigator.of(context).pop(); // Navigate back to home page
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to submit location: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  // Optimize TileLayer
+  Widget _buildMap() {
+    return FlutterMap(
+      mapController: mapController,
+      options: MapOptions(
+        initialCenter:
+            initialLocation, // Use `center` instead of `initialCenter`
+        initialZoom: 5.0,
+        minZoom: 4.0, // Prevent unnecessary far-out tiles
+        maxZoom: 16.0, // Limit max zoom level
+        onTap: (tapPosition, latLng) {
+          setState(() {
+            selectedLatLng = latLng;
+          });
+        },
+      ),
+      children: [
+        TileLayer(
+          urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          subdomains: const ['a', 'b', 'c'],
+          tileSize: 256,
+          maxZoom: 19,
+        ),
+        MarkerLayer(
+          markers: [
+            if (selectedLatLng != null)
+              Marker(
+                point: selectedLatLng!,
+                width: 40,
+                height: 40,
+                child: const Icon(
+                  Icons.location_on,
+                  color: Colors.red,
+                  size: 40,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    User user = userProvider.user;
-
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          "Offsite Request",
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Employee name',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Text(
-                user.displayName,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Email',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Text(
-                user.email,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Phone',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Text(
-                user.phoneNumber,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Select the location',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 12),
-              RadioListTile<String>(
-                activeColor: Theme.of(context).focusColor,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                dense: true,
-                contentPadding: const EdgeInsets.all(4),
-                visualDensity: VisualDensity.compact,
-                title: const Text('Delhi, HQ'),
-                value: 'Delhi, HQ',
-                groupValue: selectedLocation,
-                onChanged: (value) {
-                  setState(() {
-                    selectedLocation = value!;
-                  });
-                },
-              ),
-              RadioListTile<String>(
-                activeColor: Theme.of(context).focusColor,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                dense: true,
-                contentPadding: const EdgeInsets.all(4),
-                visualDensity: VisualDensity.compact,
-                title: const Text('Mumbai, Office'),
-                value: 'Mumbai, Office',
-                groupValue: selectedLocation,
-                onChanged: (value) {
-                  setState(() {
-                    selectedLocation = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 12),
-              Container(
-                clipBehavior: Clip.antiAlias,
-                decoration:
-                    BoxDecoration(borderRadius: BorderRadius.circular(12)),
-                height: 250,
-                child: MapWidget(
-                  key: const ValueKey("mapWidget"),
-                  cameraOptions: CameraOptions(
-                      center: Point(coordinates: Position(-98.0, 39.5)),
-                      zoom: 7,
-                      bearing: 0,
-                      pitch: 0),
-                  onMapCreated: (mapboxMap) {
-                    // _mapboxMap = mapboxMap;
+      appBar: AppBar(title: const Text("Search and Pin Location (India)")),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: searchController,
+                  onChanged: (query) {
+                    if (_debounce?.isActive ?? false) _debounce!.cancel();
+                    _debounce = Timer(const Duration(milliseconds: 300), () {
+                      fetchSuggestions(query);
+                    });
                   },
+                  decoration: InputDecoration(
+                    hintText: "Search for a place in India",
+                    prefixIcon: isLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        searchController.clear();
+                        setState(() => suggestions = []);
+                      },
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.black,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: MyButton(text: "Cancel", onTap: () {}),
+                const SizedBox(height: 8),
+                if (suggestions.isNotEmpty)
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: suggestions.length,
+                      itemBuilder: (context, index) {
+                        final suggestion = suggestions[index];
+                        return ListTile(
+                          title: Text(
+                            suggestion['display_name'],
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          onTap: () => selectSuggestion(suggestion),
+                        );
+                      },
+                    ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: MyButton(
-                        text: "Confirm",
-                        type: ButtonType.secondary,
-                        onTap: () {}),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          Expanded(child: _buildMap()),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text("Cancel"),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: submitLocation,
+                    child: const Text("Confirm"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

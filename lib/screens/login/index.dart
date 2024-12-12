@@ -23,6 +23,10 @@ class _LoginState extends State<Login> {
   Future<bool> signUserIn() async {
     setState(() => isLoading = true);
     try {
+      await FirebaseAuth.instance.setSettings(
+        appVerificationDisabledForTesting: false,
+      );
+
       final credentials = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
               email: emailController.text.trim(),
