@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
@@ -6,25 +7,30 @@ import 'package:path/path.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:local_auth/local_auth.dart';
 
 import '../screens/clock.dart';
 import '../state/user/model.dart';
 import '../state/user/service.dart';
 
 class WorkingController extends GetxController {
+  // Local Authentication
+  final LocalAuthentication _localAuthentication = LocalAuthentication();
+
   // Database instance
   late Database _database;
   final RxBool _isDatabaseInitialized = false.obs;
 
   // API endpoints
   static String API_URL = dotenv.env['API_URL']?.trim() ?? "https://gailtrack-api.onrender.com";
-  static  String _checkInUrl = API_URL + '/checkin';
-  static  String _checkOutUrl = API_URL + '/checkout';
+  static String _checkInUrl = API_URL + '/checkin';
+  static String _checkOutUrl = API_URL + '/checkout';
 
-  // User ID (currently hardcoded to 1)
-  // static const int _userId = 1;
   final Rx<User?> _currentUser = Rx<User?>(null);
   User? get currentUser => _currentUser.value;
+
+  // Reactive variable to track authentication state
+  final RxBool isAuthenticated = false.obs;
 
   @override
   void onInit() async {
@@ -63,6 +69,51 @@ class WorkingController extends GetxController {
     _isDatabaseInitialized.value = true;
   }
 
+  // Perform biometric authentication
+  Future<bool> _authenticateUser() async {
+    try {
+      // Check if biometrics are available
+      bool canCheckBiometrics = await _localAuthentication.canCheckBiometrics;
+      if (!canCheckBiometrics) {
+        // Show error that biometrics are not available
+        Get.snackbar(
+            'Authentication Error',
+            'Biometric authentication is not available on this device',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white
+        );
+        return false;
+      }
+
+      // Get available biometrics
+      List<BiometricType> availableBiometrics =
+      await _localAuthentication.getAvailableBiometrics();
+
+      // Authenticate
+      final bool didAuthenticate = await _localAuthentication.authenticate(
+          localizedReason: 'Please authenticate to check in',
+          options: AuthenticationOptions(
+            stickyAuth: true,
+            biometricOnly: true,
+          )
+      );
+
+      isAuthenticated.value = didAuthenticate;
+      return didAuthenticate;
+    } on PlatformException catch (e) {
+      debugPrint('Biometric authentication error: ${e.message}');
+      Get.snackbar(
+          'Authentication Error',
+          e.message ?? 'An error occurred during authentication',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white
+      );
+      return false;
+    }
+  }
+
   // Check and perform check-in when user enters polygon
   Future<void> performCheckIn(bool isInPolygon) async {
     if (!_isDatabaseInitialized.value || !isInPolygon || _currentUser.value == null) return;
@@ -72,23 +123,39 @@ class WorkingController extends GetxController {
       final currentDate = DateFormat('yyyy-MM-dd').format(now);
       final currentTime = ClockService().getFormattedTime();
 
+      // Check if a check-in already exists for this user on this date
       final existingCheckIns = await _database.query(
         'working',
         where: 'uuid_firebase = ? AND date = ? AND checkout IS NULL',
         whereArgs: [_currentUser.value!.uuidFirebase, currentDate],
       );
 
-      if (existingCheckIns.isEmpty) {
-        await _sendCheckInToServer(currentTime, currentDate);
-        await _database.insert('working', {
-          'uuid_firebase': _currentUser.value!.uuidFirebase,
-          'checkin': currentTime,
-          'date': currentDate,
-          'checkout': null,
-        });
-
-        debugPrint('Check-in performed at $currentTime on $currentDate');
+      // If a check-in already exists, do nothing
+      if (existingCheckIns.isNotEmpty) {
+        debugPrint('Check-in already exists for today');
+        return;
       }
+
+      // Perform biometric authentication
+      final bool isAuthenticated = await _authenticateUser();
+
+      if (!isAuthenticated) {
+        debugPrint('Authentication failed. Check-in aborted.');
+        return;
+      }
+
+      // If authentication successful, proceed with check-in
+      await _sendCheckInToServer(currentTime, currentDate);
+
+      // Insert into local database
+      await _database.insert('working', {
+        'uuid_firebase': _currentUser.value!.uuidFirebase,
+        'checkin': currentTime,
+        'date': currentDate,
+        'checkout': null,
+      });
+
+      debugPrint('Check-in performed at $currentTime on $currentDate');
     } catch (e) {
       debugPrint('Error performing check-in: $e');
     }
@@ -121,6 +188,8 @@ class WorkingController extends GetxController {
 
   // Perform check-out when user leaves polygon
   Future<void> performCheckOut(bool isInPolygon) async {
+    // Existing check-out logic remains the same
+    // No changes required for biometric authentication on check-out
     if (!_isDatabaseInitialized.value || isInPolygon || _currentUser.value == null) return;
 
     try {
@@ -170,7 +239,6 @@ class WorkingController extends GetxController {
       debugPrint('Error sending check-out to server: $e');
     }
   }
-
 
   @override
   void onClose() {
