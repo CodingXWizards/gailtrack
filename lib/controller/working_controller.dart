@@ -78,7 +78,7 @@ class WorkingController extends GetxController {
         // Show error that biometrics are not available
         Get.snackbar(
             'Authentication Error',
-            'Biometric authentication is not available on this device',
+            'Face authentication is not available on this device',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red,
             colorText: Colors.white
@@ -89,10 +89,23 @@ class WorkingController extends GetxController {
       // Get available biometrics
       List<BiometricType> availableBiometrics =
       await _localAuthentication.getAvailableBiometrics();
+      print(availableBiometrics);
 
-      // Authenticate
+      // Check if face authentication is available
+      if (!availableBiometrics.contains(BiometricType.weak)) {
+        Get.snackbar(
+            'Authentication Error',
+            'Face authentication is not supported on this device',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white
+        );
+        return false;
+      }
+
+      // Authenticate specifically with face
       final bool didAuthenticate = await _localAuthentication.authenticate(
-          localizedReason: 'Please authenticate to check in',
+          localizedReason: 'Please scan your face to check in',
           options: AuthenticationOptions(
             stickyAuth: true,
             biometricOnly: true,
@@ -100,12 +113,23 @@ class WorkingController extends GetxController {
       );
 
       isAuthenticated.value = didAuthenticate;
+
+      if (!didAuthenticate) {
+        Get.snackbar(
+            'Authentication Failed',
+            'Face authentication was unsuccessful',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white
+        );
+      }
+
       return didAuthenticate;
     } on PlatformException catch (e) {
-      debugPrint('Biometric authentication error: ${e.message}');
+      debugPrint('Face authentication error: ${e.message}');
       Get.snackbar(
           'Authentication Error',
-          e.message ?? 'An error occurred during authentication',
+          e.message ?? 'An error occurred during face authentication',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white
