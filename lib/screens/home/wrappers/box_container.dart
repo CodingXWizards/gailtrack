@@ -25,7 +25,7 @@ class BoxContainer extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(width: 1, color: AppColorsDark.border)),
+          border: Border.all(width: 1, color: const Color.fromARGB(255, 255, 255, 255))),
       child: child,
     );
   }

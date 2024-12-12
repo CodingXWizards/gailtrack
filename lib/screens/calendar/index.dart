@@ -133,7 +133,19 @@ class _CalendarState extends State<Calendar> {
                   )
                   .toList(),
             ),
-          )
+          ),
+          const Spacer(), // Added to push the location to the bottom
+          Padding(
+  padding: const EdgeInsets.symmetric(vertical: 16.0),
+  child: Text(
+    "NIT Srinagar",
+    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+      // Change to a more visible color - using black or a contrasting color
+      color: Colors.white, // or Theme.of(context).primaryColor
+      fontWeight: FontWeight.w500,
+    ),
+  ),
+),
         ],
       ),
     );

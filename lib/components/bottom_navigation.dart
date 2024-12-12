@@ -85,8 +85,8 @@ class BottomNavigation extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   color: isActive
-                      ? theme.colorScheme.secondary.withOpacity(0.2)
-                      : theme.colorScheme.primary,
+                      ? theme.colorScheme.secondary.withOpacity(0.4)
+                      : theme.colorScheme.surface,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -103,7 +103,9 @@ class BottomNavigation extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 10,
-              color: isActive ? theme.colorScheme.secondary : theme.focusColor,
+              color: isActive
+                  ? theme.colorScheme.secondary
+                  : theme.colorScheme.surface,
             ),
           ),
         ],

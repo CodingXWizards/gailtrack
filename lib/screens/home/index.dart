@@ -16,27 +16,30 @@ import 'package:gailtrack/screens/home/tabs/tasks/index.dart';
 import 'package:gailtrack/screens/home/tabs/attendance/index.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({super.key}); // Already using const
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  final _storage = const FlutterSecureStorage();
+  final _storage = const FlutterSecureStorage(); // Already using const
   bool isSignedIn = false;
   bool isCheckingAuth = true;
+  bool isActive = false; 
+  bool isxyz = true; 
 
   int _currentTabIndex = 0;
-  final PageController _pageController = PageController();
+  final PageController _pageController = PageController(); // Note: PageController can't be const due to internal mutability
+
   final Map<int, Widget> _loadedTabs = {};
 
-  final Map<int, Future<Widget>> _tabs = {
-    0: Future.value(const HomeTab()),
-    1: Future.value(const Attendance()),
-    2: Future.value(const Tasks()),
-    3: Future.value(const People()),
-    4: Future.value(const More()),
+  final Map<int, Widget> _tabs = {
+    0: const HomeTab(), // Using const for widget constructors
+    1: const Attendance(), // Using const for widget constructors
+    2: const Tasks(), // Using const for widget constructors
+    3: const People(), // Using const for widget constructors
+    4: const More(), // Using const for widget constructors
   };
 
   void _onTap(int index) {
@@ -46,42 +49,19 @@ class _HomeState extends State<Home> {
     _pageController.jumpToPage(index);
   }
 
-  Future<Widget> _loadTabContent(int index) async {
-    // Simulate sideloading with a delay or actual API call
-    await Future.delayed(const Duration(seconds: 1));
-    return _tabs[index]!;
-  }
-
   Widget _getTabContent(int index) {
-    if (_loadedTabs.containsKey(index)) {
-      return _loadedTabs[index]!;
-    } else {
-      return FutureBuilder<Widget>(
-        future: _loadTabContent(index),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading tab: ${snapshot.error}'));
-          } else {
-            final tab = snapshot.data!;
-            _loadedTabs[index] = tab;
-            return tab;
-          }
-        },
-      );
-    }
+    return _tabs[index]!;
   }
 
   @override
   void initState() {
     super.initState();
+    checkLoggedIn();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    checkLoggedIn();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       Provider.of<UserProvider>(context, listen: false).loadData();
@@ -98,36 +78,48 @@ class _HomeState extends State<Home> {
   }
 
   void checkLoggedIn() async {
-    String? authToken = await _storage.read(key: 'authToken');
-    String? isBiometricsEnabled =
-        await _storage.read(key: 'isBiometricsEnabled');
+    try {
+      String? authToken = await _storage.read(key: 'authToken');
+      String? isBiometricsEnabled =
+          await _storage.read(key: 'isBiometricsEnabled');
 
-    if (authToken != null && isBiometricsEnabled == 'true') {
-      bool authenticated = await authenticateWithBiometrics();
-      if (authenticated) {
-        setState(() {
-          isSignedIn = true;
-          isCheckingAuth = false;
-        });
-        return;
+      if (authToken != null && isBiometricsEnabled == 'true') {
+        bool authenticated = await authenticateWithBiometrics();
+        if (authenticated) {
+          setState(() {
+            isSignedIn = true;
+            isCheckingAuth = false;
+          });
+          return;
+        }
       }
-    }
 
-    setState(() {
-      isCheckingAuth = false;
-    });
-
-    if (authToken == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacementNamed(context, '/signin');
+      setState(() {
+        isCheckingAuth = false;
       });
+
+      if (authToken == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pushReplacementNamed(context, '/signin');
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isCheckingAuth = false;
+      });
+      print('Error checking login: $e');
+      Navigator.pushReplacementNamed(context, '/signin');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (isCheckingAuth) {
-      return const Center(child: CircularProgressIndicator());
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     return Scaffold(
@@ -147,20 +139,33 @@ class _HomeState extends State<Home> {
         ),
         leading: const Icon(Icons.notifications_active_rounded),
         actions: [
-          InkWell(
-            onTap: () {},
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: Theme.of(context).focusColor,
-              child: const Center(
-                child: Text(
-                  "SOS",
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: isActive
+                          ? Colors.green 
+                          : isxyz
+                          ? const Color.fromARGB(255, 255, 157, 59) 
+                          : Colors.red,
+                  shape: BoxShape.circle,
                 ),
               ),
-            ),
+              const SizedBox(width: 4),
+              Text(
+                isActive
+                    ? 'Active' 
+                    : isxyz
+                    ? 'xyz' 
+                    : 'Offline',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(width: 12),
+            ],
           ),
-          const SizedBox(width: 12),
         ],
       ),
       body: PageView.builder(

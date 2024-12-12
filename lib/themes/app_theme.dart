@@ -9,10 +9,10 @@ class AppTheme {
     dividerColor: AppColorsLight.border,
     fontFamily: "Inter",
 
-    scaffoldBackgroundColor: AppColorsLight.background,
+    scaffoldBackgroundColor: const Color.fromARGB(255, 61, 61, 61),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColorsLight.primary,
-      titleTextStyle: TextStyle(color: AppColorsLight.textPrimary),
+      titleTextStyle: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
     ),
     colorScheme: const ColorScheme.light(
       primary: AppColorsLight.primary,
@@ -47,8 +47,9 @@ class AppTheme {
       ),
       titleSmall: TextStyle(
         fontSize: 20,
-        color: AppColorsLight.textPrimary,
+        color: AppColorsLight.textSecondary,
       ),
+      
 
       //* Text Style for Normal Headings
       labelLarge: TextStyle(
@@ -78,7 +79,7 @@ class AppTheme {
       ),
       bodySmall: TextStyle(
         fontSize: 14,
-        color: AppColorsLight.textPrimaryMuted,
+        color: Color.fromARGB(255, 244, 235, 235),
       ),
     ),
   );
