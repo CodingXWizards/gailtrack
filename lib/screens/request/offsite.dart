@@ -88,7 +88,7 @@ class _RequestOffsiteState extends State<RequestOffsite>
     }
 
     final url = Uri.parse(
-        'https://example.com/api/submit-location'); // Replace with actual API URL
+        'https://7bd2-117-96-42-140.ngrok-free.app/offsitelog'); // Replace with actual API URL
     final body = jsonEncode({
       "latitude": selectedLatLng!.latitude,
       "longitude": selectedLatLng!.longitude,

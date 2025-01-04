@@ -73,12 +73,22 @@ class Working {
 
   Duration getTotalWorkingDuration() {
     if (checkIn.isNotEmpty && checkOut != null && checkOut!.isNotEmpty) {
-      final checkInTime =
-          DateFormat.jm().parse(checkIn); // Assuming check-in time is a string.
-      final checkOutTime = DateFormat.jm()
-          .parse(checkOut!); // Assuming check-out time is a string.
-      return checkOutTime.difference(checkInTime);
+      try {
+        final checkInDateTime = _parseTimeToDateTime(date, checkIn);
+        final checkOutDateTime = _parseTimeToDateTime(date, checkOut!);
+        return checkOutDateTime.difference(checkInDateTime);
+      } catch (e) {
+        print("Error calculating total working duration: $e");
+        return Duration.zero;
+      }
     }
     return Duration.zero;
+  }
+
+  DateTime _parseTimeToDateTime(DateTime date, String time) {
+    // Combine the date with the time string and convert to DateTime
+    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    final combined = '$formattedDate $time';
+    return DateFormat('yyyy-MM-dd HH:mm').parse(combined);
   }
 }

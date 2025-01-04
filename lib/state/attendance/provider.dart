@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:gailtrack/state/attendance/model.dart';
 import 'package:gailtrack/state/attendance/service.dart';
@@ -20,7 +21,7 @@ class WorkingProvider extends ChangeNotifier {
   }
 
   void _initializeSocket() {
-    _socket = IO.io('http://192.168.1.14:5001', <String, dynamic>{
+    _socket = IO.io('${dotenv.env['API_URL']?.trim()}', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
     });

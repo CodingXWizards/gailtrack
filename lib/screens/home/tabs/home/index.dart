@@ -23,14 +23,15 @@ class HomeTab extends StatelessWidget {
 
     for (var working in workingList) {
       if (isToday(working.date)) {
-        final checkInTime = DateTime.parse("2021-01-01 " + working.checkIn);
+        final checkInTime = DateTime.parse(
+            '${working.date.toIso8601String().split('T')[0]}T${working.checkIn}');
         DateTime checkOutTime;
 
         if (working.checkOut == null || working.checkOut!.isEmpty) {
-          checkOutTime =
-              DateTime.now(); // If checkOut is null, use current time
+          checkOutTime = DateTime.now();
         } else {
-          checkOutTime = DateTime.parse("2021-01-01 " + working.checkOut!);
+          checkOutTime = DateTime.parse(
+              '${working.date.toIso8601String().split('T')[0]}T${working.checkOut!}');
         }
 
         totalDuration += checkOutTime.difference(checkInTime);
