@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-String WEBSOCKET_URL = dotenv.env['WEBSOCKET_URL'] ?? "ws://localhost:5000";
+String WEBSOCKET_URL = dotenv.env['WEBSOCKET_URL'] ?? "ws://localhost:5001";
 
 class WebSocketConnection {
   WebSocket? _socket;

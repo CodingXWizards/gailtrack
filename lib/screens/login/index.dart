@@ -41,7 +41,7 @@ class _LoginState extends State<Login> {
       setState(() => error = e.toString());
       return false;
     } finally {
-      setState(() => isLoading = true);
+      setState(() => isLoading = false);
     }
   }
 

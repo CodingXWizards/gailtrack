@@ -13,7 +13,7 @@ class WebSocketManager {
     _connection = WebSocketConnection();
     _connection.onMessage = _handleMessage;
     _connection.onDisconnect = _handleDisconnect;
-    _connection.connect();
+    // _connection.connect();
   }
 
   WebSocketConnection get connection => _connection;

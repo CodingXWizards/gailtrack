@@ -88,12 +88,13 @@ class _RequestOffsiteState extends State<RequestOffsite>
     }
 
     final url = Uri.parse(
-        'https://7bd2-117-96-42-140.ngrok-free.app/offsitelog'); // Replace with actual API URL
+        'http://localhost:5001/offsitelog'); // Replace with actual API URL
     final body = jsonEncode({
       "latitude": selectedLatLng!.latitude,
       "longitude": selectedLatLng!.longitude,
       "location": searchController.text,
     });
+    print("Hello");
 
     try {
       final response = await http.post(
@@ -101,7 +102,6 @@ class _RequestOffsiteState extends State<RequestOffsite>
         headers: {"Content-Type": "application/json"},
         body: body,
       );
-
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Location submitted successfully!')),

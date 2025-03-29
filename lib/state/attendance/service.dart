@@ -33,7 +33,7 @@ Future<List<Working>> fetchWorking() async {
         .map<Working>((working) => Working.fromJson(working))
         .toList();
 
-    print(workings);
+    // print(workings);
     return workings;
   } catch (e) {
     throw Exception(e);
