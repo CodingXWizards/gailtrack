@@ -453,7 +453,7 @@ class NetworkController extends GetxController {
                 'user_id': _currentUser.value!.uuidFirebase,
                 'lat': position.latitude,
                 'long': position.longitude,
-                'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
+                'date': DateFormat("yyyy-MM-dd").format(DateTime.now()),
                 'time': ClockService().getFormattedTime(),
               });
             }
@@ -499,7 +499,7 @@ class NetworkController extends GetxController {
             "user_id": "1",
             "latitude": position.latitude,
             "longitude": position.longitude,
-            "date": DateFormat('dd-MM-yyyy').format(DateTime.now()),
+            "date": DateFormat('yyyy-MM-dd').format(DateTime.now()),
             "Time": ClockService().getFormattedTime(),
             'online': true,
             'working': isInPolygon
@@ -511,7 +511,7 @@ class NetworkController extends GetxController {
                 'user_id': _currentUser.value!.uuidFirebase,
                 'lat': position.latitude,
                 'long': position.longitude,
-                'date': DateFormat('dd-MM-yyyy').format(DateTime.now()),
+                'date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
                 'time': ClockService().getFormattedTime(),
               });
             }
@@ -540,7 +540,6 @@ class NetworkController extends GetxController {
             try {
               final isInPolygon = _isLocationInActivePolygons(
                   location['lat'] as double, location['long'] as double);
-              // debugPrint(location['date']);
               final payload = {
                 "uuid_firebase": location['user_id'],
                 "latitude": location['lat'].toString(),
