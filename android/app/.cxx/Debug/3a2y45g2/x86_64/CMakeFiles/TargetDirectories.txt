@@ -1,0 +1,2 @@
+/Users/rajasingh/coding/projects/gailtrack/android/app/.cxx/Debug/3a2y45g2/x86_64/CMakeFiles/edit_cache.dir
+/Users/rajasingh/coding/projects/gailtrack/android/app/.cxx/Debug/3a2y45g2/x86_64/CMakeFiles/rebuild_cache.dir

@@ -17,7 +17,7 @@ class AppProviders {
         ChangeNotifierProvider(create: (_) => TaskProvider()),
 
         //WebSocket Providers
-        Provider(create: (_) => TaskWebSocketService())
+        // Provider(create: (_) => TaskWebSocketService())
       ],
       child: child,
     );

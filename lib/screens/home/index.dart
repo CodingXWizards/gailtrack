@@ -88,12 +88,12 @@ class _HomeState extends State<Home> {
       Provider.of<WorkingProvider>(context, listen: false).loadWorking();
       Provider.of<RequestProvider>(context, listen: false).loadRequests();
 
-      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-      taskProvider.loadtasks();
+      // final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      // taskProvider.loadtasks();
 
-      final webSocketService = TaskWebSocketService();
-      webSocketService.setTaskProvider(taskProvider);
-      webSocketService.connect();
+      // final webSocketService = TaskWebSocketService();
+      // webSocketService.setTaskProvider(taskProvider);
+      // webSocketService.connect();
     });
   }
 

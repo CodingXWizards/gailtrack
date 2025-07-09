@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gailtrack/state/tasks/model.dart';
-import 'package:gailtrack/state/tasks/provider.dart';
+// import 'package:gailtrack/state/tasks/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -20,7 +20,8 @@ class _TasksState extends State<Tasks> {
   @override
   Widget build(BuildContext context) {
     User user = Provider.of<UserProvider>(context).user;
-    List<Task> taskList = Provider.of<TaskProvider>(context).taskList;
+    // List<Task> taskList = Provider.of<TaskProvider>(context).taskList;
+    List<Task> taskList = [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

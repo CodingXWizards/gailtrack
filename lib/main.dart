@@ -30,7 +30,7 @@ void main() async {
     print(message);
   };
 
-  WebSocketManager().init();
+  // WebSocketManager().init();
 
   //* Accessing Mapbox access token from .env
   String mapboxAccessToken =
