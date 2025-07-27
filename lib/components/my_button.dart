@@ -25,6 +25,7 @@ class MyButton extends StatelessWidget {
   });
 
   Color getColor(List<Color> colors, context) {
+    if (bgColor != null) return bgColor!;
     switch (type) {
       case ButtonType.primary:
         return colors[0];

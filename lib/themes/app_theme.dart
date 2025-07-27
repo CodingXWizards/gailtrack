@@ -6,7 +6,7 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: AppColorsLight.primary,
-    dividerColor: AppColorsLight.border,
+    dividerColor: const Color.fromARGB(255, 255, 255, 255),
     fontFamily: "Inter",
 
     scaffoldBackgroundColor: AppColorsLight.background,
@@ -38,16 +38,16 @@ class AppTheme {
       titleLarge: TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.w900,
-        color: AppColorsLight.textPrimary,
+        color: Color.fromARGB(255, 37, 62, 116),
       ),
       titleMedium: TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: AppColorsLight.textPrimary,
+        color: Color.fromARGB(255, 37, 62, 116),
       ),
       titleSmall: TextStyle(
         fontSize: 20,
-        color: AppColorsLight.textPrimary,
+        color: Color.fromARGB(255, 37, 62, 116),
       ),
 
       //* Text Style for Normal Headings
@@ -74,7 +74,7 @@ class AppTheme {
       ),
       bodyMedium: TextStyle(
         fontSize: 16,
-        color: AppColorsLight.textPrimaryMuted,
+        color: Color.fromARGB(255, 37, 62, 116),
       ),
       bodySmall: TextStyle(
         fontSize: 14,
