@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 class AppColorsLight {
   //* Primary Colors
-  static const Color primary = Color(0xFF0D47A1);
-  static const Color secondary = Color(0xFFFF5722);
+  static const Color primary = Color.fromARGB(255, 72, 140, 195);
+  static const Color secondary = Color.fromARGB(153, 201, 201, 201);
 
   //* Background and Surface Colors
   static const Color background = Color(0xFFF5F5F5);
-  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surface = Color.fromARGB(255, 72, 140, 195);
 
   //* Text Colors
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textPrimaryMuted = Color(0xFFCCCCCC);
-  static const Color textSecondary = Color(0xFF000000);
+  static const Color textPrimary = Color.fromARGB(255, 40, 40, 40);
+  static const Color textPrimaryMuted = Color.fromARGB(255, 45, 45, 45);
+  static const Color textSecondary = Color.fromARGB(255, 42, 42, 42);
 
   //* Divider and Border Colors
   static const Color divider = Color(0xFF333333);

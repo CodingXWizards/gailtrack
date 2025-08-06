@@ -143,9 +143,13 @@ class _HomeState extends State<Home> {
                       : _currentTabIndex == 3
                           ? "People"
                           : "More",
-          style: Theme.of(context).textTheme.titleSmall,
+          style: TextStyle(
+      fontSize: 21,
+      fontWeight: FontWeight.bold,
+      color: const Color.fromARGB(255, 255, 255, 255), // 🔵 Custom title color
+    ),
         ),
-        leading: const Icon(Icons.notifications_active_rounded),
+        leading: const Icon(Icons.notifications_active_rounded, color: Colors.white,),
         actions: [
           InkWell(
             onTap: () {},
@@ -155,7 +159,7 @@ class _HomeState extends State<Home> {
               child: const Center(
                 child: Text(
                   "SOS",
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
               ),
             ),

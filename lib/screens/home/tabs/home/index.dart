@@ -44,6 +44,29 @@ class HomeTab extends StatelessWidget {
     return (hours > 0) ? '${hours}h ${minutes}m' : '${minutes}m';
   }
 
+  // Show dialog for manual check-in/check-out
+  void _showManualDialog(BuildContext context, String type) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Manual $type'),
+        content: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            // TODO: Add manual check-in/out logic here
+          },
+          child: Text('Manually $type'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<UserProvider, WorkingProvider>(
@@ -51,54 +74,76 @@ class HomeTab extends StatelessWidget {
         User user = userProvider.user;
         List<Working> workingList = workingProvider.working;
 
+        final String checkInTime = workingList.isNotEmpty &&
+                workingList.last.checkIn.isNotEmpty
+            ? workingList.last.checkIn.substring(0, 5)
+            : "---";
+
+        final String checkOutTime = workingList.isNotEmpty &&
+                (workingList.last.checkOut?.isNotEmpty ?? false)
+            ? workingList.last.checkOut!.substring(0, 5)
+            : "---";
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
+                // Checked-in Box
                 Expanded(
-                  child: BoxContainer(
-                    child: Column(
-                      children: [
-                        Text(
-                          "Checked-in",
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        Text(
-                          workingList.isNotEmpty &&
-                                  workingList.last.checkIn.isNotEmpty
-                              ? workingList.last.checkIn.substring(0, 5)
-                              : "---",
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
+                  child: GestureDetector(
+                    onTap: () {
+                      if (checkInTime == "---") {
+                        _showManualDialog(context, "Check-in");
+                      }
+                    },
+                    child: BoxContainer(
+                      child: Column(
+                        children: [
+                          Text(
+                            "Checked-in",
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          Text(
+                            checkInTime,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
+
+                // Checked-out Box
                 Expanded(
-                  child: BoxContainer(
-                    child: Column(
-                      children: [
-                        Text(
-                          "Checked-out",
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        Text(
-                          workingList.isNotEmpty &&
-                                  (workingList.last.checkOut?.isNotEmpty ??
-                                      false)
-                              ? workingList.last.checkOut!.substring(0, 5)
-                              : "---",
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
+                  child: GestureDetector(
+                    onTap: () {
+                      if (checkOutTime == "---") {
+                        _showManualDialog(context, "Check-out");
+                      }
+                    },
+                    child: BoxContainer(
+                      child: Column(
+                        children: [
+                          Text(
+                            "Checked-out",
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          Text(
+                            checkOutTime,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
+
+            // Working Hours
             BoxContainer(
               child: Column(
                 children: [
@@ -114,6 +159,8 @@ class HomeTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
+
+            // Cards
             CustomCard(
               title: user.userType == UserType.hr
                   ? "Check Requests"
@@ -132,6 +179,7 @@ class HomeTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
+
             CustomCard(
               title: "Request a leave or HalfDay",
               description:
@@ -141,6 +189,7 @@ class HomeTab extends StatelessWidget {
               onPressed: () => Navigator.pushNamed(context, '/request/leave'),
             ),
             const SizedBox(height: 32),
+
             if (user.userType == UserType.hr)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
