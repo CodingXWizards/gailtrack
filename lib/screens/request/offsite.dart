@@ -88,7 +88,7 @@ class _RequestOffsiteState extends State<RequestOffsite>
     }
 
     final url = Uri.parse(
-        'http://localhost:5001/offsitelog'); // Replace with actual API URL
+        'https://gailtrack-api.onrender.com'); // Replace with actual API URL
     final body = jsonEncode({
       "latitude": selectedLatLng!.latitude,
       "longitude": selectedLatLng!.longitude,
@@ -200,7 +200,7 @@ class _RequestOffsiteState extends State<RequestOffsite>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.black,
+                    fillColor: const Color.fromARGB(255, 183, 183, 183),
                   ),
                 ),
                 const SizedBox(height: 8),

@@ -99,7 +99,7 @@ class _RequestLeaveState extends State<RequestLeave> {
               const SizedBox(height: 16),
               Input(
                 label: "Start Date",
-                placeholder: DateFormat("dd/MM/yyyy").format(DateTime.now()),
+                placeholder: DateFormat("yyyy/MM/dd").format(DateTime.now()),
                 controller: startDateController,
                 onDateSelected: (selectedDate) {
                   if (selectedDate.isBefore(DateTime.now())) {
@@ -124,11 +124,11 @@ class _RequestLeaveState extends State<RequestLeave> {
               const SizedBox(height: 16),
               Input(
                 label: "End Date",
-                placeholder: DateFormat("dd/MM/yyyy").format(DateTime.now()),
+                placeholder: DateFormat("yyyy/MM/dd").format(DateTime.now()),
                 controller: endDateController,
                 onDateSelected: (selectedDate) {
                   final startDate = startDateController.text.isNotEmpty
-                      ? DateFormat("dd/MM/yyyy").parse(startDateController.text)
+                      ? DateFormat("yyyy/MM/dd").parse(startDateController.text)
                       : null;
 
                   if (startDate == null) {
@@ -173,9 +173,9 @@ class _RequestLeaveState extends State<RequestLeave> {
                   onTap: () async {
                     try {
                       // Parse dates from the controllers
-                      final startDate = DateFormat("dd/MM/yyyy")
+                      final startDate = DateFormat("yyyy/MM/dd")
                           .parse(startDateController.text);
-                      final endDate = DateFormat("dd/MM/yyyy")
+                      final endDate = DateFormat("yyyy/MM/dd")
                           .parse(endDateController.text);
 
                       // Create the request object

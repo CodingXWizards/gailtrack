@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gailtrack/screens/home/wrappers/box_container.dart';
 import 'package:intl/intl.dart'; // For formatting time
+import 'package:get/get.dart';
+
 
 class More extends StatefulWidget {
   const More({super.key});
@@ -19,6 +21,7 @@ class _MoreState extends State<More> {
     {"name": "Info", "path": "/info"},
     {"name": "Manage members", "path": "/manage-members"},
     {"name": "Report", "path": "/report"},
+    {"name": "Theme", "path": "/theme"}, 
     {"name": "Support", "path": "/support"},
     {"name": "Change Language", "path": "/change-language"},
     {"name": "Restrictions", "path": "/restrictions"},
@@ -40,8 +43,31 @@ class _MoreState extends State<More> {
       case "/restrictions":
         _showTimeRestrictionDialog();
         break;
-      default:
-        return;
+        case "/theme":
+      // Toggle between light and dark mode
+      final brightness = Theme.of(context).brightness;
+      final isDarkMode = brightness == Brightness.dark;
+      final newMode = isDarkMode ? ThemeMode.light : ThemeMode.dark;
+
+      // This works only if you're using GetMaterialApp (as you are)
+      // and themeMode is controlled by GetX
+      setState(() {
+        // Toggle theme using GetX
+        Get.changeThemeMode(newMode);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Switched to ${isDarkMode ? 'Light' : 'Dark'} Mode')),
+      );
+      break;
+
+    default:
+      // Navigate for all other paths
+      Navigator.pushNamed(context, path);
+
+      // default:
+      //   return;
+
+
     }
   }
 
