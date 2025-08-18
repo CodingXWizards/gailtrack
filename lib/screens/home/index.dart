@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gailtrack/state/attendance/provider.dart';
 import 'package:gailtrack/state/request/provider.dart';
-import 'package:gailtrack/state/tasks/provider.dart';
-import 'package:gailtrack/websocket/tasks_service.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gailtrack/utils/helper.dart';
@@ -143,13 +141,16 @@ class _HomeState extends State<Home> {
                       : _currentTabIndex == 3
                           ? "People"
                           : "More",
-          style: TextStyle(
-      fontSize: 21,
-      fontWeight: FontWeight.bold,
-      color: const Color.fromARGB(255, 255, 255, 255), // 🔵 Custom title color
-    ),
+          style: const TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 255, 255, 255), // 🔵 Custom title color
+          ),
         ),
-        leading: const Icon(Icons.notifications_active_rounded, color: Colors.white,),
+        leading: const Icon(
+          Icons.notifications_active_rounded,
+          color: Colors.white,
+        ),
         actions: [
           InkWell(
             onTap: () {},
@@ -159,7 +160,10 @@ class _HomeState extends State<Home> {
               child: const Center(
                 child: Text(
                   "SOS",
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
               ),
             ),

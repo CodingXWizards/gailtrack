@@ -1,5 +1,4 @@
-// 
-
+//
 
 import 'dart:io';
 
@@ -748,5 +747,15 @@ class NetworkController extends GetxController {
     _socket?.dispose();
     _socket = null;
     super.onClose();
+  }
+
+  // Get active geofences for external use
+  List<dynamic> getActiveGeofences() {
+    return List.from(_activePolygons);
+  }
+
+  // Check if a location is within active geofences (public method)
+  bool isLocationInActiveGeofences(double latitude, double longitude) {
+    return _isLocationInActivePolygons(latitude, longitude);
   }
 }

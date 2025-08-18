@@ -13,7 +13,7 @@ class AppTheme {
 
     scaffoldBackgroundColor: AppColorsLight.background,
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColorsLight.primary,
+      backgroundColor: AppColorsLight.surface,
       titleTextStyle: TextStyle(color: AppColorsLight.textPrimary),
     ),
     colorScheme: const ColorScheme.light(
@@ -21,7 +21,10 @@ class AppTheme {
       secondary: AppColorsLight.secondary,
       surface: AppColorsLight.surface,
     ),
-
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AppColorsLight.surface,
+      contentTextStyle: TextStyle(color: AppColorsLight.background),
+    ),
     //* Elevated Button Styling
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(

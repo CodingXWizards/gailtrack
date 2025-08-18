@@ -46,7 +46,6 @@ class CustomCard extends StatelessWidget {
               onPressed: onPressed,
               child: Text(
                 buttonText,
-                style: Theme.of(context).textTheme.labelLarge,
               )),
         )
       ],

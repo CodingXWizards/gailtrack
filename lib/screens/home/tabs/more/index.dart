@@ -5,7 +5,6 @@ import 'package:gailtrack/screens/home/wrappers/box_container.dart';
 import 'package:intl/intl.dart'; // For formatting time
 import 'package:get/get.dart';
 
-
 class More extends StatefulWidget {
   const More({super.key});
 
@@ -21,7 +20,7 @@ class _MoreState extends State<More> {
     {"name": "Info", "path": "/info"},
     {"name": "Manage members", "path": "/manage-members"},
     {"name": "Report", "path": "/report"},
-    {"name": "Theme", "path": "/theme"}, 
+    {"name": "Theme", "path": "/theme"},
     {"name": "Support", "path": "/support"},
     {"name": "Change Language", "path": "/change-language"},
     {"name": "Restrictions", "path": "/restrictions"},
@@ -38,36 +37,36 @@ class _MoreState extends State<More> {
         _storage.deleteAll();
         await FirebaseAuth.instance.signOut();
         WidgetsBinding.instance.addPostFrameCallback(
-                (_) => Navigator.popAndPushNamed(context, '/signin'));
+            (_) => Navigator.popAndPushNamed(context, '/signin'));
         break;
       case "/restrictions":
         _showTimeRestrictionDialog();
         break;
-        case "/theme":
-      // Toggle between light and dark mode
-      final brightness = Theme.of(context).brightness;
-      final isDarkMode = brightness == Brightness.dark;
-      final newMode = isDarkMode ? ThemeMode.light : ThemeMode.dark;
+      case "/theme":
+        // Toggle between light and dark mode
+        final brightness = Theme.of(context).brightness;
+        final isDarkMode = brightness == Brightness.dark;
+        final newMode = isDarkMode ? ThemeMode.light : ThemeMode.dark;
 
-      // This works only if you're using GetMaterialApp (as you are)
-      // and themeMode is controlled by GetX
-      setState(() {
-        // Toggle theme using GetX
-        Get.changeThemeMode(newMode);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Switched to ${isDarkMode ? 'Light' : 'Dark'} Mode')),
-      );
-      break;
+        // This works only if you're using GetMaterialApp (as you are)
+        // and themeMode is controlled by GetX
+        setState(() {
+          // Toggle theme using GetX
+          Get.changeThemeMode(newMode);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Switched to ${isDarkMode ? 'Light' : 'Dark'} Mode')),
+        );
+        break;
 
-    default:
-      // Navigate for all other paths
-      Navigator.pushNamed(context, path);
+      default:
+        // Navigate for all other paths
+        Navigator.pushNamed(context, path);
 
       // default:
       //   return;
-
-
     }
   }
 
@@ -84,7 +83,7 @@ class _MoreState extends State<More> {
                 title: const Text("Start Time"),
                 trailing: Text(startTime != null
                     ? DateFormat.jm().format(
-                    DateTime(0, 0, 0, startTime!.hour, startTime!.minute))
+                        DateTime(0, 0, 0, startTime!.hour, startTime!.minute))
                     : "Not set"),
                 onTap: () async {
                   final selectedTime = await showTimePicker(
@@ -100,7 +99,7 @@ class _MoreState extends State<More> {
                 title: const Text("End Time"),
                 trailing: Text(endTime != null
                     ? DateFormat.jm().format(
-                    DateTime(0, 0, 0, endTime!.hour, endTime!.minute))
+                        DateTime(0, 0, 0, endTime!.hour, endTime!.minute))
                     : "Not set"),
                 onTap: () async {
                   final selectedTime = await showTimePicker(
@@ -156,20 +155,23 @@ class _MoreState extends State<More> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: settings
-          .map((setting) => InkWell(
-        onTap: () => onTap(setting['path']),
-        child: BoxContainer(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            setting['name'],
-            style: Theme.of(context).textTheme.labelLarge,
-          ),
-        ),
-      ))
-          .toList(),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: settings
+            .map((setting) => InkWell(
+                  onTap: () => onTap(setting['path']),
+                  child: BoxContainer(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      setting['name'],
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ),
+                ))
+            .toList(),
+      ),
     );
   }
 }
